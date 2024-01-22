@@ -10,10 +10,8 @@
                 <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
 
                     <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-camera-reels-fill" viewBox="0 0 16 16">
-                            <path d="M6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                            <path d="M9 6a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-                            <path d="M9 6h.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 7.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 16H2a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-cloud-fog-fill" viewBox="0 0 16 16">
+                            <path d="M3 13.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m10.405-9.473a5.001 5.001 0 0 0-9.499-1.004A3.5 3.5 0 1 0 3.5 12H13a3 3 0 0 0 .405-5.973"/>
                         </svg>
                         <span class="fs-4 ms-2">ChefQuizAI</span>
                     </a>
@@ -28,7 +26,7 @@
                             </li>
 
                             <li class="nav-item"><a href="{{ path('home') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('home') ? 'active' : '' }}" aria-current="page">Home</a></li>
-                            <li class="nav-item"><a href="{{ path('add_movie') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('add_movie') ? 'active' : '' }}">Add Movie</a></li>
+                            <li class="nav-item"><a href="{{ path('dashboard') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('dashboard') ? 'active' : '' }}">Dashboard</a></li>
                             <li class="nav-item"><a href="{{ path('app_logout') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_logout') ? 'active' : '' }}">Logout</a></li>
 
                         {% else %}
@@ -54,8 +52,7 @@
             <ul class="nav justify-content-center border-bottom pb-3 mb-3">
                 <li class="nav-item"><a href="{{ path('home') }}" class="nav-link px-2 text-body-secondary">Home</a></li>
             </ul>
-            <p class="text-center text-body-secondary">© 2023 Roasting Reels, Inc</p>
-            <p class="text-center text-muted small">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+            <p class="text-center text-body-secondary">© 2024 ChefQuizAI, Inc</p>
         </footer>
     </div>
 {% endblock %}
