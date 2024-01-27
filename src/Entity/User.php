@@ -6,7 +6,6 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -55,14 +54,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank (message: 'Please enter your name.') ]
     private ?string $name = null;
 
+
+    //Collection of Quiz entities created by the user
+    #[ORM\OneToMany(mappedBy: "trainer", targetEntity: Quiz::class)]
+    private Collection $createdQuizzes;
+
+    // Collection of AssignedQuiz entities assigned by the user (trainer)
+    #[ORM\OneToMany(mappedBy: "assigner", targetEntity: AssignedQuiz::class)]
+    private Collection $assignedQuizzes;
+
+    // Collection of AssignedQuiz entities assigned to the user (chef)
+    #[ORM\OneToMany(mappedBy: "chef", targetEntity: AssignedQuiz::class)]
+    private Collection $receivedQuizzes;
+
     /**
      * The constructor of the User class.
      */
     public function __construct() {
         $this->roles = [];
-        #$this->reviews = new ArrayCollection();
+        $this->createdQuizzes = new ArrayCollection();
+        $this->assignedQuizzes = new ArrayCollection();
+        $this->receivedQuizzes = new ArrayCollection();
     }
-
 
     /**
      *
@@ -203,5 +216,90 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         $this->plainPassword = null;
+    }
+
+    public function getCreatedQuizzes(): Collection
+    {
+        return $this->createdQuizzes;
+    }
+
+    public function addCreatedQuiz(Quiz $quiz): self
+    {
+        if (!$this->createdQuizzes->contains($quiz)) {
+            $this->createdQuizzes[] = $quiz;
+            $quiz->setTrainer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCreatedQuiz(Quiz $quiz): self
+    {
+        if ($this->createdQuizzes->removeElement($quiz)) {
+            if ($quiz->getTrainer() === $this) {
+                $quiz->setTrainer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getAssignedQuizzes(): Collection
+    {
+        return $this->assignedQuizzes;
+    }
+
+    public function addAssignedQuiz(AssignedQuiz $assignedQuiz): self
+    {
+        if (!$this->assignedQuizzes->contains($assignedQuiz)) {
+            $this->assignedQuizzes[] = $assignedQuiz;
+            $assignedQuiz->setAssigner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssignedQuiz(AssignedQuiz $assignedQuiz): self
+    {
+        if ($this->assignedQuizzes->removeElement($assignedQuiz)) {
+            // set the owning side to null (unless already changed)
+            if ($assignedQuiz->getChef() === $this) {
+                $assignedQuiz->setChef(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function createQuiz(string $title, string $caseScenario): Quiz
+    {
+        $quiz = new Quiz();
+        $quiz->setTitle($title);
+        $quiz->setCaseScenario($caseScenario);
+        $quiz->setCreationDate(new \DateTime());
+        $this->addCreatedQuiz($quiz);
+
+        return $quiz;
+    }
+
+    public function assignQuizToChef(AssignedQuiz $assignedQuiz, User $chef): void
+    {
+        // Set the trainer (assigner) of the AssignedQuiz
+        $assignedQuiz->setAssigner($this);
+        $this->addAssignedQuiz($assignedQuiz);
+
+        // Set the chef (receiver) of the AssignedQuiz and add it to the chef's receivedQuizzes
+        $chef->addReceivedQuiz($assignedQuiz);
+    }
+
+
+    public function addReceivedQuiz(AssignedQuiz $assignedQuiz): self
+    {
+        if (!$this->receivedQuizzes->contains($assignedQuiz)) {
+            $this->receivedQuizzes[] = $assignedQuiz;
+            $assignedQuiz->setChef($this); // Set the chef of the AssignedQuiz
+        }
+
+        return $this;
     }
 }
