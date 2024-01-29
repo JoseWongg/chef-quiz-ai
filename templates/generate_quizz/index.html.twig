@@ -1,0 +1,151 @@
+{% extends 'layout.html.twig' %}
+
+{% block layout_title %}ChefQuizAI{% endblock %}
+
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/style.css') }}">
+{% endblock %}
+
+
+{% block content %}
+    <div class="row">
+        <!-- Left side panel for quiz generation -->
+        <div class="col-12 col-lg-2" style="padding-right: 50px;">
+            <form id="generate-quiz-form" class="mb-4">
+
+                <div class="mb-3">
+                    <label for="quiz-title" class="form-label" style="font-weight: bold;">Quiz Title</label>
+                    <input type="text" class="form-control" id="quiz-title" placeholder="Enter Title">
+                </div>
+
+                <div class="mb-3">
+
+                    <label for="quiz-type" class="form-label" style="font-weight: bold;">Quiz Type</label>
+                    <select class="form-select" id="quiz-type">
+                        <option value="" disabled selected>Select Type</option>
+                        <option value="Food safety">Food Safety</option>
+                        <option value="Cross contamination">Cross Contamination</option>
+                        <option value="Cooking Methods">Cooking Methods</option>
+                        <option value="Receiving and Storing Goods">Receiving and Storing Goods</option>
+                        <option value="Allergens">Allergens</option>
+                        <option value="Hygiene">Hygiene</option>
+                    </select>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="generate-quiz-button" style="margin-top: 350px;">Generate Quiz</button>
+            </form>
+            <button class="btn btn-success" id="approve-quiz-button">Approve Quiz</button>
+        </div>
+
+        <!-- Right side panel for displaying the generated quiz as a manually controlled slider -->
+        <div class="col-12 col-lg-10">
+            <div id="quizCarousel" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner">
+                    <!-- Case Scenario Slide -->
+                    <div class="carousel-item active">
+                        <div class="card mb-4" style="background-color: #0056b3; padding: 20px;">
+                            <div class="card-body">
+                                <h5 class="card-title" style="color: white;">Case Scenario</h5>
+                                <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff; min-height: 635px;">
+                                    <p class="card-text case-scenario">[Case Scenario will be displayed here]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question Slides -->
+                    {% for i in 1..5 %}
+                        <div class="carousel-item">
+                            <div class="card mb-4" style="background-color: #0056b3; padding: 20px;">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="color: white;">Question {{ i }}</h5>
+                                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff;">
+                                        <p class="card-text question-text">[Question Text]</p>
+                                    </div>
+
+                                    <!-- Answer Options for Question {{ i }} -->
+                                    <div class="options">
+                                        {% for j in 1..4 %}
+                                            <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; background-color: #f9f9f9;">
+                                                <h6>Option {{ j }}
+                                                    {% if j == 2 %} <!-- Simulate the correct answer for demonstration -->
+                                                        <span style="color: red;">Correct Answer</span>
+                                                    {% endif %}
+                                                </h6>
+                                                <div style="border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff;">
+                                                    <p style="font-size: small;">[Option Text]</p>
+                                                </div>
+                                                <div style="border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff; margin-top: 5px;">
+                                                    <small>[Feedback]</small>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Bootstrap carousel controls -->
+                <a class="carousel-control-prev" role="button" data-bs-target="#quizCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </a>
+                <a class="carousel-control-next" role="button" data-bs-target="#quizCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+
+{# Populate the template with mock data#}
+{% block javascripts %}
+    {{ parent() }} {# Include parent JavaScript files if needed #}
+
+    <script>
+        // Event handler for the "Generate Quiz" button
+        $('#generate-quiz-button').on('click', function() {
+            // Populate the quiz scenario with mock data
+            $('.case-scenario').text('Bella Bistro is bustling with energy as the lunch crowd begins to pour in. Chef Marco is in charge of the kitchen today, juggling multiple tasks to keep up with the orders. He starts by marinating raw chicken, then swiftly moves to assembling salads. He grabs lettuce and tomatoes from the fridge, slicing them on the same cutting board he used for the chicken. Meanwhile, Sous Chef Lisa is preparing the seafood special. She places the raw shrimp on the top shelf of the fridge, above the cooked pasta dishes ready for service. In her rush, she forgets to cover the shrimp with plastic wrap. Line Cook Tony is responsible for the grill station today. After grilling steaks to the perfect medium-rare, he places them back on the same plate that held the raw meat. Tony then moves to help with dessert, not pausing to wash his hands or change his apron stained with meat juices. Pastry Chef Emily is in her corner, decorating cakes with her freshly washed hands. However, she quickly wipes her wet hands on her apron before opening the oven to check on the pastries. Dishwasher Alex is struggling with the influx of dirty dishes. He scrubs them quickly, occasionally bypassing the sanitizer step to speed up the process. The clean plates are stacked immediately after a quick rinse. The team works tirelessly, unaware that they might be overlooking critical food safety procedures in the heat of the moment.');
+
+            // Define custom text for options and feedback
+            var optionTexts = ["Chef Marco uses separate knives for raw chicken and vegetables.", "Sous Chef Lisa stores raw shrimp on the top shelf of the fridge above the cooked pasta dishes.", "Line Cook Tony grills steaks and places them on a clean plate before serving.", "Pastry Chef Emily washes her hands before decorating cakes and opening the oven."];
+            var feedbackTexts = ["Incorrect. Using separate knives for different types of food is a correct practice to avoid cross-contamination.", "Correct. Storing raw seafood above ready-to-eat food can lead to cross-contamination if juices drip down.", " Incorrect. Using a clean plate for cooked food is a safe practice and prevents cross-contamination.", "Incorrect. Washing hands before handling food and equipment is a proper food safety practice."];
+
+            // Iterate through each question card and populate with data
+            $('.carousel-item:not(.case-scenario)').each(function(index, element) {
+                // Populate the question text
+                $(element).find('.question-text').text('During a busy lunch service at Bella Bistro, which of the following actions by the kitchen staff poses a risk of food contamination?');
+
+                // Populate each option within the question cards with custom text
+                $(element).find('.options h6').each(function(optionIndex, optionElement) {
+                    $(optionElement).text('Option ' + (optionIndex + 1));
+
+                    // Check if it's the correct answer option (e.g., option 2)
+                    if (optionIndex === 1) {
+                        $(optionElement).append(' <span style="color: red;">Correct Answer</span>');
+                    }
+                });
+                $(element).find('.options p').each(function(optionIndex, optionElement) {
+                    $(optionElement).text(optionTexts[optionIndex]);
+                });
+
+                // Populate each feedback within the question cards with custom text
+                $(element).find('.options small').each(function(feedbackIndex, feedbackElement) {
+                    $(feedbackElement).text(feedbackTexts[feedbackIndex]);
+                });
+            });
+
+            // Prevent the form from submitting (if it's a real form)
+            return false;
+        });
+    </script>
+{% endblock %}
+

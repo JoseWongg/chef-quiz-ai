@@ -302,4 +302,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    public function removeReceivedQuiz(AssignedQuiz $assignedQuiz): self
+    {
+        if ($this->receivedQuizzes->removeElement($assignedQuiz)) {
+            // set the owning side to null (unless already changed)
+            if ($assignedQuiz->getChef() === $this) {
+                $assignedQuiz->setChef(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getReceivedQuizzes(): Collection
+    {
+        return $this->receivedQuizzes;
+    }
+
 }

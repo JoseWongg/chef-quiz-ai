@@ -1,0 +1,54 @@
+/* styles.css */
+/* Custom styles for carousel controls */
+
+    /* Custom styles for carousel controls */
+.carousel-control-prev,
+.carousel-control-next {
+    position: absolute;
+    top: 50%; /* Align vertically in the middle */
+    transform: translateY(-50%);
+    z-index: 5; /* Ensure the controls are above all other content */
+    background: none; /* No background */
+    border: none; /* No border */
+    outline: none; /* No outline */
+    width: 44px; /* Width of the buttons */
+    height: 44px; /* Height of the buttons */
+    cursor: pointer; /* Cursor indicates clickable area */
+}
+
+/* Position the prev button to the left side of the carousel */
+.carousel-control-prev {
+    left: -50px;
+}
+
+/* Position the next button to the right side of the carousel */
+.carousel-control-next {
+    right: -50px;
+}
+
+/* Set the appearance of the Font Awesome icons for the controls */
+.carousel-control-prev-icon:before,
+.carousel-control-next-icon:before {
+    font-family: 'Font Awesome 5 Free'; /* Font Awesome font family */
+    font-weight: 900; /* Font Awesome font weight for solid icons */
+    color: #007bff; /* Blue color for visibility */
+    font-size: 2rem; /* Size of the icons */
+    line-height: 1; /* Adjust line height to align icons properly */
+}
+
+/* FontAwesome left arrow icon */
+.carousel-control-prev-icon:before {
+    content: '\f053'; /* FontAwesome icon unicode */
+}
+
+/* FontAwesome right arrow icon */
+.carousel-control-next-icon:before {
+    content: '\f054'; /* FontAwesome icon unicode */
+}
+
+/* Ensure icons do not disappear on hover */
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background: none; /* No background change */
+    opacity: 1; /* Full opacity */
+}

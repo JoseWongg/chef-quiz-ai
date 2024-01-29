@@ -25,7 +25,7 @@ class Quiz
     #[Assert\NotBlank]
     private ?string $title = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "quizzes")]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "createdQuizzes")]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $trainer = null;
 
@@ -38,7 +38,7 @@ class Quiz
     private ?string $caseScenario = null;
 
 
-    #[ORM\OneToMany(targetEntity: Question::class, mappedBy: "quiz", orphanRemoval: true, cascade: ["persist"])]
+    #[ORM\OneToMany(mappedBy: "quiz", targetEntity: Question::class, cascade: ["persist"], orphanRemoval: true)]
     private Collection $questions;
 
     #[ORM\Column(type: "boolean")]
@@ -156,5 +156,4 @@ class Quiz
 
         return $assignedQuiz;
     }
-
 }

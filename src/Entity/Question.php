@@ -84,7 +84,6 @@ class Question
     public function removeOption(Option $option): self
     {
         if ($this->options->removeElement($option)) {
-            // set the owning side to null (unless already changed)
             if ($option->getQuestion() === $this) {
                 $option->setQuestion(null);
             }

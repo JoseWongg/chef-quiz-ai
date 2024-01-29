@@ -81,8 +81,6 @@ class AssignedQuiz
         return $this;
     }
 
-
-
     public function getChef(): ?User
     {
         return $this->chef;
@@ -168,20 +166,19 @@ class AssignedQuiz
     {
         $this->progression = 0.0;
         $questions = $this->getQuiz()->getQuestions();
-        $total = count($questions);
-        $answered = 0;
+        $totalQuestions = count($questions);
+        $totalSelectedOptions = 0;
 
         foreach ($questions as $question) {
             foreach ($question->getOptions() as $option) {
                 if ($option->getIsSelected()) {
-                    $answered++;
-                    break;
+                    $totalSelectedOptions++;
                 }
             }
         }
 
-        if ($total > 0) {
-            $this->progression = $answered / $total;
+        if ($totalQuestions > 0) {
+            $this->progression = $totalSelectedOptions / ($totalQuestions * count($question->getOptions()));
         }
 
         return $this;
@@ -221,8 +218,4 @@ class AssignedQuiz
         $this->calculateMark();
         return $this;
     }
-
-
-
-
 }
