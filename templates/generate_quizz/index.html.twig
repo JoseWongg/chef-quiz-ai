@@ -36,6 +36,8 @@
 
                 <button type="button" class="btn btn-primary" id="generate-quiz-button" style="margin-top: 350px;">Generate Quiz</button>
             </form>
+
+
             <button class="btn btn-success" id="approve-quiz-button">Approve Quiz</button>
         </div>
 
@@ -43,13 +45,29 @@
         <div class="col-12 col-lg-10">
             <div id="quizCarousel" class="carousel slide" data-bs-ride="false">
                 <div class="carousel-inner">
+
+
                     <!-- Case Scenario Slide -->
                     <div class="carousel-item active">
                         <div class="card mb-4" style="background-color: #0056b3; padding: 20px;">
                             <div class="card-body">
                                 <h5 class="card-title" style="color: white;">Case Scenario</h5>
-                                <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff; min-height: 635px;">
-                                    <p class="card-text case-scenario">[Case Scenario will be displayed here]</p>
+                                <div style="position: relative; border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff; min-height: 635px; display: flex; align-items: center; justify-content: center; text-align: center;">
+                                    <!-- Loading Indicator-->
+                                    <div id="loading-indicator" class="text-center" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <span>Loading, please wait...</span>
+                                    </div>
+                                    <!-- Placeholder or dynamic GPT API content -->
+                                    <div id="case-scenario-content" style="line-height: 1.6; width: 100%;">
+                                        {% if scenarioText is defined %}
+                                            <p class="card-text case-scenario">{{ scenarioText }}</p>
+                                        {% else %}
+                                            <p class="card-text case-scenario">[Case Scenario will be displayed here]</p>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -103,49 +121,47 @@
     </div>
 {% endblock %}
 
-
-
-{# Populate the template with mock data#}
 {% block javascripts %}
-    {{ parent() }} {# Include parent JavaScript files if needed #}
+    {{ parent() }}
 
     <script>
-        // Event handler for the "Generate Quiz" button
-        $('#generate-quiz-button').on('click', function() {
-            // Populate the quiz scenario with mock data
-            $('.case-scenario').text('Bella Bistro is bustling with energy as the lunch crowd begins to pour in. Chef Marco is in charge of the kitchen today, juggling multiple tasks to keep up with the orders. He starts by marinating raw chicken, then swiftly moves to assembling salads. He grabs lettuce and tomatoes from the fridge, slicing them on the same cutting board he used for the chicken. Meanwhile, Sous Chef Lisa is preparing the seafood special. She places the raw shrimp on the top shelf of the fridge, above the cooked pasta dishes ready for service. In her rush, she forgets to cover the shrimp with plastic wrap. Line Cook Tony is responsible for the grill station today. After grilling steaks to the perfect medium-rare, he places them back on the same plate that held the raw meat. Tony then moves to help with dessert, not pausing to wash his hands or change his apron stained with meat juices. Pastry Chef Emily is in her corner, decorating cakes with her freshly washed hands. However, she quickly wipes her wet hands on her apron before opening the oven to check on the pastries. Dishwasher Alex is struggling with the influx of dirty dishes. He scrubs them quickly, occasionally bypassing the sanitizer step to speed up the process. The clean plates are stacked immediately after a quick rinse. The team works tirelessly, unaware that they might be overlooking critical food safety procedures in the heat of the moment.');
+        $(document).ready(function() {
+            $('#generate-quiz-button').click(function() {
+                // Hide case scenario content
+                $('#case-scenario-content').hide();
 
-            // Define custom text for options and feedback
-            var optionTexts = ["Chef Marco uses separate knives for raw chicken and vegetables.", "Sous Chef Lisa stores raw shrimp on the top shelf of the fridge above the cooked pasta dishes.", "Line Cook Tony grills steaks and places them on a clean plate before serving.", "Pastry Chef Emily washes her hands before decorating cakes and opening the oven."];
-            var feedbackTexts = ["Incorrect. Using separate knives for different types of food is a correct practice to avoid cross-contamination.", "Correct. Storing raw seafood above ready-to-eat food can lead to cross-contamination if juices drip down.", " Incorrect. Using a clean plate for cooked food is a safe practice and prevents cross-contamination.", "Incorrect. Washing hands before handling food and equipment is a proper food safety practice."];
+                // Show loading indicator
+                $('#loading-indicator').show();
 
-            // Iterate through each question card and populate with data
-            $('.carousel-item:not(.case-scenario)').each(function(index, element) {
-                // Populate the question text
-                $(element).find('.question-text').text('During a busy lunch service at Bella Bistro, which of the following actions by the kitchen staff poses a risk of food contamination?');
+                $.ajax({
+                    type: 'POST',
+                    url: '{{ path('app_generate_quizz') }}',
+                    success: function(data) {
+                        // Hide the loading indicator
+                        $('#loading-indicator').hide();
 
-                // Populate each option within the question cards with custom text
-                $(element).find('.options h6').each(function(optionIndex, optionElement) {
-                    $(optionElement).text('Option ' + (optionIndex + 1));
+                        // Show case scenario content again
+                        $('#case-scenario-content').show();
 
-                    // Check if it's the correct answer option (e.g., option 2)
-                    if (optionIndex === 1) {
-                        $(optionElement).append(' <span style="color: red;">Correct Answer</span>');
+                        // Update the scenario text
+                        $('.case-scenario').text(data.scenarioText);
+                    },
+                    error: function() {
+                        // Hide the loading indicator
+                        $('#loading-indicator').hide();
+
+                        // Show case scenario content even if there's an error, could adjust based on requirements
+                        $('#case-scenario-content').show();
+
+                        // Show an error message
+                        $('.case-scenario').text('Error occurred. Please try again.');
                     }
                 });
-                $(element).find('.options p').each(function(optionIndex, optionElement) {
-                    $(optionElement).text(optionTexts[optionIndex]);
-                });
-
-                // Populate each feedback within the question cards with custom text
-                $(element).find('.options small').each(function(feedbackIndex, feedbackElement) {
-                    $(feedbackElement).text(feedbackTexts[feedbackIndex]);
-                });
             });
-
-            // Prevent the form from submitting (if it's a real form)
-            return false;
         });
     </script>
 {% endblock %}
+
+
+
 
