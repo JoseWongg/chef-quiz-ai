@@ -38,7 +38,12 @@ class GenerateQuizzController extends AbstractController
                     return new JsonResponse(['scenarioText' => $scenarioText]);
                 }
             } else {
-                // Handle non-AJAX POST request if necessary
+                // Handle non-AJAX POST request
+                // Render the initial template with error message
+                return $this->render('generate_quizz/index.html.twig', [
+                    'controller_name' => 'GenerateQuizzController',
+                    'error' => 'Invalid request. Please try again.'
+                ]);
             }
         }
 
