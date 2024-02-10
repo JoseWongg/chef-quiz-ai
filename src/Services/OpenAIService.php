@@ -100,5 +100,4 @@ ACTION 5: ['Food safety violation 5 here'].";
             return ['error' => $e->getMessage()];
         }
     }
-
 }
