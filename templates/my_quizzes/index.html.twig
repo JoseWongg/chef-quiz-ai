@@ -9,6 +9,8 @@
     {# Section to display the filters for the quizzes #}
     <div class="container" style="margin-top: 1em; margin-bottom: 4em">
         <div class="row">
+
+
             <div class="col-md-6">
                 <label for="completionFilter">Filter by Completion:</label>
                 <select id="completionFilter" class="form-select">
@@ -17,6 +19,8 @@
                     <option value="incomplete">Incomplete</option>
                 </select>
             </div>
+
+
             <div class="col-md-6">
                 <label for="topicFilter">Filter by Topic:</label>
                 <select id="topicFilter" class="form-select">
@@ -29,6 +33,9 @@
         </div>
     </div>
 
+    {# Section to display the quizzes #}
+
+    <div style="min-height: 800px">
     <table class="table">
         <thead>
         <tr>
@@ -59,12 +66,28 @@
             {% endif %}
 
         </tbody>
-
     </table>
+    </div>
+
+
+    <div id="paginationControls" class="d-flex justify-content-center">
+        <!-- Pagination controls will be dynamically inserted here by JavaScript -->
+    </div>
+
+
+
+
+
+
+
+
+
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
+{#
+
     <script>
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -107,7 +130,9 @@
                                         : '<i class="bi bi-x-circle-fill text-danger"></i>')
                                     : '<i class="bi bi-circle text-muted"></i>'
                             }</td>
+
                             <td style="text-align: center">${completeButtonHTML}</td>
+
                         </tr>
                     `;
                             quizList.insertAdjacentHTML('beforeend', quizRow);
@@ -133,5 +158,111 @@
         });
 
     </script>
+
+#}
+
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        function fetchQuizzes(completionFilter, topicFilter, page = 1) {
+            const url = `/fetch-my-filtered-quizzes?completion=${completionFilter}&topic=${topicFilter}&page=${page}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const quizList = document.getElementById('quizList');
+                    quizList.innerHTML = ''; // Clear existing quiz list
+
+                    if (data.quizzes.length === 0) {
+                        quizList.innerHTML = '<tr><td colspan="9" style="text-align: center">No quizzes found.</td></tr>';
+                    } else {
+                        data.quizzes.forEach(quiz => {
+                            let completeButtonHTML = quiz.assignedQuizIsCompleted === false ?
+                                `<a href="/my/quizzes/${quiz.assignedQuizId}" class="btn btn-primary">Take Quiz</a>` :
+                                `<a href="/my/quizzes/${quiz.assignedQuizId}/details" class="btn btn-primary">View Quiz</a>`;
+
+
+
+
+                            const quizRow = `
+                            <tr>
+                                <td style="text-align: center">${quiz.generatedDate}</td>
+                                <td style="text-align: center">${quiz.quizId}</td>
+                                <td style="text-align: center">${quiz.topic}</td>
+                                <td style="text-align: center">${quiz.assigner}</td>
+                                <td style="text-align: center">${quiz.deadline}</td>
+                                <td style="text-align: center">${quiz.overdue === 'Yes' ? '<span class="badge bg-danger">Yes</span>' : '<span class="badge bg-success">No</span>'}</td>
+                                <td style="text-align: center">${quiz.assignedQuizIsCompleted === true ? quiz.assignedQuizMark + ' %' : 'N/A'}</td>
+                                <td style="text-align: center">${quiz.assignedQuizIsPassed ? '<i class="bi bi-check-circle-fill text-success"></i>' : '<i class="bi bi-x-circle-fill text-danger"></i>'}</td>
+                                <td style="text-align: center">${completeButtonHTML}</td>
+                            </tr>
+
+
+
+
+
+
+
+                        `;
+                            quizList.insertAdjacentHTML('beforeend', quizRow);
+                        });
+                    }
+
+                    updatePaginationControls(data.pagination);
+                })
+                .catch(error => console.error('Error fetching quizzes:', error));
+        }
+
+        // Function to update the pagination controls based on the pagination data
+        function updatePaginationControls(paginationData) {
+            const container = document.getElementById('paginationControls');
+            container.innerHTML = '';
+
+            if (paginationData.currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.textContent = 'Previous';
+                prevButton.className = 'btn btn-outline-secondary';
+                prevButton.addEventListener('click', () => fetchQuizzes(document.getElementById('completionFilter').value, document.getElementById('topicFilter').value, paginationData.currentPage - 1));
+                container.appendChild(prevButton);
+            }
+
+            for (let page = 1; page <= paginationData.totalPages; page++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = page;
+                pageButton.className = 'btn ' + (page === paginationData.currentPage ? 'btn-primary' : 'btn-outline-secondary');
+                pageButton.addEventListener('click', () => fetchQuizzes(document.getElementById('completionFilter').value, document.getElementById('topicFilter').value, page));
+                container.appendChild(pageButton);
+            }
+
+            if (paginationData.currentPage < paginationData.totalPages) {
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'Next';
+                nextButton.className = 'btn btn-outline-secondary';
+                nextButton.addEventListener('click', () => fetchQuizzes(document.getElementById('completionFilter').value, document.getElementById('topicFilter').value, paginationData.currentPage + 1));
+                container.appendChild(nextButton);
+            }
+        }
+
+        document.getElementById('completionFilter').addEventListener('change', function() {
+            const completionFilter = this.value;
+            const topicFilter = document.getElementById('topicFilter').value;
+            fetchQuizzes(completionFilter, topicFilter);
+        });
+
+        document.getElementById('topicFilter').addEventListener('change', function() {
+            const topicFilter = this.value;
+            const completionFilter = document.getElementById('completionFilter').value;
+            fetchQuizzes(completionFilter, topicFilter);
+        });
+
+        // Initial fetch
+        fetchQuizzes('', '', 1);
+    });
+
+
+</script>
+
 
 {% endblock %}

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Quiz;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @extends ServiceEntityRepository<Quiz>
@@ -23,6 +24,9 @@ class QuizRepository extends ServiceEntityRepository
 
 
 
+
+
+
     /**
      * Finds quizzes based on filter criteria.
      *
@@ -32,7 +36,7 @@ class QuizRepository extends ServiceEntityRepository
      * @param string|null $trainerName
      * @return Quiz[]
      */
-    public function findByFilters(?\DateTimeInterface $dateFrom, ?\DateTimeInterface $dateTo, ?string $topic, ?string $trainerName): array
+    public function findByFilters2(?\DateTimeInterface $dateFrom, ?\DateTimeInterface $dateTo, ?string $topic, ?string $trainerName): array
     {
         $queryBuilder = $this->createQueryBuilder('q')
             ->leftJoin('q.trainer', 't');
@@ -56,6 +60,54 @@ class QuizRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+
+/**
+
+    // original version of the method
+    public function findByFilters($trainerName, $topic)
+    {
+        $qb = $this->createQueryBuilder('q')
+            ->leftJoin('q.trainer', 't');
+
+        if ($trainerName) {
+            $qb->andWhere('t.name = :trainerName')
+                ->setParameter('trainerName', $trainerName);
+        }
+
+        if ($topic) {
+            $qb->andWhere('q.type = :topic')
+                ->setParameter('topic', $topic);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+**/
+
+
+
+
+    public function findByFiltersQueryBuilder($trainerName, $topic): QueryBuilder {
+        $qb = $this->createQueryBuilder('q')
+            ->leftJoin('q.trainer', 't');
+
+        if ($trainerName) {
+            $qb->andWhere('t.name = :trainerName')
+                ->setParameter('trainerName', $trainerName);
+        }
+
+        if ($topic) {
+            $qb->andWhere('q.type = :topic')
+                ->setParameter('topic', $topic);
+        }
+
+        // Return the query builder instead of executing the query
+        return $qb;
+    }
+
+
+
+
 
 
 

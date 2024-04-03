@@ -6,38 +6,11 @@
 
     <h2 style="text-align: center; padding-bottom: 1em">Quiz Repository</h2>
 
-
-
-    {# section for the filter form #}
-    <div class="container mb-4" style="margin-top: 2em; padding-bottom: 3em">
-        <div class="row g-3">
-
-
-            <div class="col-md-2">
-                <label for="dateFrom" class="form-label">Date From:</label>
-                <input type="date" class="form-control" id="dateFrom">
-            </div>
-
-
-            <div class="col-md-2">
-                <label for="dateTo" class="form-label">Date To:</label>
-                <input type="date" class="form-control" id="dateTo">
-            </div>
-
-
-            <div class="col-md-3">
-                <label for="topicFilter" class="form-label">Filter by Topic:</label>
-                <select id="topicFilter" class="form-select">
-                    <option value="">All</option>
-                    {% for topic in topics %}
-                        <option value="{{ topic }}">{{ topic }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-
-            <div class="col-md-4">
-                <label for="trainerFilter" class="form-label">Filter by Trainer:</label>
+    {# Section to display the filters for the quizzes #}
+    <div class="container" style="margin-top: 1em; margin-bottom: 4em">
+        <div class="row">
+            <div class="col-md-6">
+                <label for="trainerFilter" >Filter by Trainer:</label>
                 <select id="trainerFilter" class="form-select">
                     <option value="">All</option>
                     {% for user in users %}
@@ -47,16 +20,25 @@
             </div>
 
 
-            <div class="col-md-1 align-self-end">
-                <button id="filterButton" class="btn btn-primary w-100">Filter</button>
+
+            <div class="col-md-6">
+                <label for="topicFilter">Filter by Topic:</label>
+                <select id="topicFilter" class="form-select">
+                    <option value="">All</option>
+                    {% for topic in topics %}
+                        <option value="{{ topic }}">{{ topic }}</option>
+                    {% endfor %}
+                </select>
             </div>
-
-
         </div>
     </div>
 
 
-    <table class="table">
+
+    {# Section to display the quizzes #}
+
+    <div style="min-height: 800px;">
+    <table class="table" >
         <thead>
         <tr>
             <th style="text-align: center" >Date Created</th>
@@ -66,7 +48,7 @@
               <th style="text-align: center"></th>
         </tr>
         </thead>
-        <tbody>
+        <tbody id="quizList">
 
         {# if there isn't any quiz, display a message #}
         {% if quizzes|length == 0 %}
@@ -96,7 +78,7 @@
         {% endif %}
         </tbody>
     </table>
-
+    </div>
 
     <!-- Assign Modal -->
     <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
@@ -140,6 +122,9 @@
         </div>
     </div>
 
+    <div id="paginationControls" class="d-flex justify-content-center">
+        <!-- Pagination controls will be dynamically inserted here by JavaScript -->
+    </div>
 
 
 {% endblock %}
@@ -147,70 +132,125 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script>
 
-        // Event listener for when the DOM is fully loaded
+    <script>
+        // This is the one I've been working on today
+
         document.addEventListener('DOMContentLoaded', function() {
 
+            document.getElementById('quizList').addEventListener('click', function(e) {
+                // Check if the clicked element is an assign button
+                if (e.target && e.target.getAttribute('data-bs-target') === '#assignModal') {
+                    var totalQuestions = e.target.getAttribute('data-questions');
+                    var passingScoreInput = document.getElementById('passingScore');
 
-            {# NEEDS DEBUGGING, NOT WORKING FILTERS FUNCTIONALITY #}
-            function fetchQuizzes() {
-                const dateFrom = document.getElementById('dateFrom').value;
-                const dateTo = document.getElementById('dateTo').value;
-                const topicFilter = document.getElementById('topicFilter').value.trim();
+                    // Set the max attribute for passingScore input
+                    if (passingScoreInput) {
+                        passingScoreInput.setAttribute('max', totalQuestions);
+                    }
+                    var quizId = e.target.getAttribute('data-quiz-id');
+                    var assignModal = document.getElementById('assignModal');
+
+                    // Set the data-quiz-id attribute for the assignModal
+                    if (assignModal) {
+                        assignModal.setAttribute('data-quiz-id', quizId);
+                    }
+                }
+            });
+
+            // Function to fetch quizzes and update UI
+            function fetchFilteredQuizzes(page = 1) { // Default to page 1
                 const trainerFilter = document.getElementById('trainerFilter').value;
-
-                // Update the URL below to the endpoint that handles your quiz filtering logic
-                const url = `/fetch-filtered-quizzes?dateFrom=${dateFrom}&dateTo=${dateTo}&topic=${encodeURIComponent(topicFilter)}&trainerName=${encodeURIComponent(trainerFilter)}`;
+                const topicFilter = document.getElementById('topicFilter').value;
+                const url = `/fetch-filtered-quizzes?trainer=${encodeURIComponent(trainerFilter)}&topic=${encodeURIComponent(topicFilter)}&page=${page}`;
 
                 fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(quizzes => {
-                        const tbody = document.querySelector('table.table tbody');
-                        tbody.innerHTML = ''; // Clear current table rows
+                    .then(response => response.json())
+                    .then(data => {
+                        const { quizzes, pagination } = data; // Destructure the data object
+                        const quizList = document.getElementById('quizList');
+                        quizList.innerHTML = ''; // Clear the current list
 
-                        if (quizzes.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center">No quizzes found.</td></tr>';
-                            return;
-                        }
-
-                        quizzes.forEach(quiz => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
+                        if (!quizzes.length) {
+                            quizList.innerHTML = '<tr><td colspan="5" style="text-align: center">No quizzes found.</td></tr>';
+                        } else {
+                            quizzes.forEach(quiz => {
+                                const row = `
+                        <tr>
                             <td style="text-align: center">${quiz.creationDate}</td>
                             <td style="text-align: center">${quiz.id}</td>
-                            <td style="text-align: center">${quiz.topic}</td>
+                            <td style="text-align: center">${quiz.type}</td>
                             <td style="text-align: center">${quiz.trainerName}</td>
                             <td style="text-align: center">
-                                <a href="/quiz/${quiz.id}/details" class="btn btn-primary">Details</a>
-                                <!-- Consider dynamically generating other buttons if necessary -->
+                                <a href="${quiz.detailsUrl}" class="btn btn-primary">Details</a>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal" data-quiz-id="${quiz.id}" data-questions="${quiz.questionsLength}">Assign</button>
+                                <a href="${quiz.historyUrl}" class="btn btn-primary">History</a>
                             </td>
+                        </tr>
                         `;
-                            tbody.appendChild(row);
-                        });
+                                quizList.insertAdjacentHTML('beforeend', row);
+                            });
+                        }
+
+                        updatePaginationControls(pagination); // Call function to update pagination controls
                     })
-                    .catch(error => {
-                        console.error('Failed to fetch quizzes:', error);
-                    });
+                    .catch(error => console.error('Failed to fetch quizzes:', error));
             }
 
-            // Place the event listeners for filter inputs here, after defining fetchQuizzes
-            //document.getElementById('dateFrom').addEventListener('change', fetchQuizzes);
-            //document.getElementById('dateTo').addEventListener('change', fetchQuizzes);
-            //document.getElementById('topicFilter').addEventListener('change', fetchQuizzes);
-            //document.getElementById('trainerFilter').addEventListener('change', fetchQuizzes);
 
-            document.getElementById('filterButton').addEventListener('click', fetchQuizzes);
+            // Function to dynamically create and update pagination controls
+            function updatePaginationControls(pagination) {
+                const container = document.getElementById('paginationControls');
+                container.innerHTML = '';
 
-            // Call fetchQuizzes initially to load quizzes
-            fetchQuizzes();
+                if (pagination.currentPage > 1) {
+                    const prevButton = document.createElement('button');
+                    prevButton.textContent = 'Previous';
+                    prevButton.className = 'btn btn-outline-secondary';
+                    prevButton.addEventListener('click', () => fetchFilteredQuizzes(pagination.currentPage - 1));
+                    container.appendChild(prevButton);
+                }
 
-            // JavaScript for setting the minimum date for the quizDeadline input to today's date
+                for (let page = 1; page <= pagination.totalPages; page++) {
+                    const button = document.createElement('button');
+                    button.textContent = page;
+                    button.className = 'btn ' + (page === pagination.currentPage ? 'btn-primary' : 'btn-outline-secondary');
+                    button.addEventListener('click', () => fetchFilteredQuizzes(page));
+                    container.appendChild(button);
+                }
+
+                if (pagination.currentPage < pagination.totalPages) {
+                    const nextButton = document.createElement('button');
+                    nextButton.textContent = 'Next';
+                    nextButton.className = 'btn btn-outline-secondary';
+                    nextButton.addEventListener('click', () => fetchFilteredQuizzes(pagination.currentPage + 1));
+                    container.appendChild(nextButton);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // Event listeners for filter changes
+            document.getElementById('trainerFilter').addEventListener('change', () => fetchFilteredQuizzes());
+            document.getElementById('topicFilter').addEventListener('change', () => fetchFilteredQuizzes());
+
+            // Initial fetch
+            fetchFilteredQuizzes();
+
+
+            // Setting the minimum date for the quizDeadline input to today's date
             var deadlineInput = document.getElementById('quizDeadline');
             var today = new Date();
             var dd = String(today.getDate()).padStart(2, '0');
@@ -218,18 +258,6 @@
             var yyyy = today.getFullYear();
             today = yyyy + '-' + mm + '-' + dd;
             deadlineInput.setAttribute('min', today);
-
-            // JavaScript to dynamically set the max value for passingScore input
-            var assignButtons = document.querySelectorAll('button[data-bs-target="#assignModal"]');
-            assignButtons.forEach(function(button) {
-                button.addEventListener('click', function() {
-                    var totalQuestions = this.getAttribute('data-questions');
-                    var passingScoreInput = document.getElementById('passingScore');
-                    passingScoreInput.setAttribute('max', totalQuestions);
-                    var quizId = this.getAttribute('data-quiz-id');
-                    document.getElementById('assignModal').setAttribute('data-quiz-id', quizId);
-                });
-            });
 
             // JavaScript to handle the form submission for assigning a quiz
             window.assignQuiz = function() {
@@ -254,9 +282,11 @@
                 });
                 // Retrieve the quizId stored in the modal's attribute
                 const quizId = document.getElementById('assignModal').getAttribute('data-quiz-id');
+                // Retrieve the passingScore
                 const passingScore = document.getElementById('passingScore').value;
                 // Retrieve the deadline
                 const deadline = document.getElementById('quizDeadline').value;
+
                 // Prepare the data object with the correct structure
                 const assignmentData = {
                     quizId: quizId,
@@ -264,6 +294,7 @@
                     passingScore: parseInt(passingScore),
                     deadline: deadline
                 };
+
                 // Send a POST request to the server
                 fetch('/assign-quiz', {
                     method: 'POST',
@@ -295,35 +326,19 @@
                     });
             };
 
-
-            // Target the close button of the modal
-            var closeButton = document.querySelector('#assignModal .btn-close');
-            closeButton.addEventListener('click', function() {
-                // Clear all checked checkboxes within the assignForm
-                document.querySelectorAll('#assignForm .form-check-input:checked').forEach(input => {
-                    input.checked = false;
-                });
-                // Reset other form elements if necessary
-                document.getElementById('passingScore').value = '';
-                document.getElementById('quizDeadline').value = '';
-            });
-            // Event listener for modal hidden event to handle case where modal is dismissed without clicking the close button
-            $('#assignModal').on('hidden.bs.modal', function () {
-                // Clear all checked checkboxes within the assignForm
-                document.querySelectorAll('#assignForm .form-check-input:checked').forEach(input => {
-                    input.checked = false;
-                });
-                // Reset other form elements if necessary
-                document.getElementById('passingScore').value = '';
-                document.getElementById('quizDeadline').value = '';
-            });
-
         });
+
+        // jQuery for handling the modal's hidden event
+        $(document).ready(function() {
+            $('#assignModal').on('hidden.bs.modal', function() {
+                document.querySelectorAll('#assignForm .form-check-input:checked').forEach(input => {
+                    input.checked = false;
+                });
+                document.getElementById('passingScore').value = '';
+                document.getElementById('quizDeadline').value = '';
+            });
+        });
+
     </script>
+
 {% endblock %}
-
-
-
-
-
-

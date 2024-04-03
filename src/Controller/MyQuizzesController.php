@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\AssignedQuiz;
 use App\Repository\AssignedQuizRepository;
 use App\Services\AssignedQuizPreviewFormattingService;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -120,10 +121,17 @@ class MyQuizzesController extends AbstractController
     }
 
 
+
+
+
+/**
+
+
     // Method to fetch filtered quizzes based on completion status and topic
     #[Route('/fetch-my-filtered-quizzes', name: 'fetch_my_filtered_quizzes')]
     public function fetchQuizzes(Request $request, AssignedQuizRepository $assignedQuizRepository): JsonResponse
     {
+
 
         $completionFilter = $request->query->get('completion');
         $topicFilter = $request->query->get('topic');
@@ -158,6 +166,68 @@ class MyQuizzesController extends AbstractController
         // Return the JSON response with the filtered quizzes
         return new JsonResponse($serializedQuizzes);
     }
+
+**/
+
+
+
+    #[Route('/fetch-my-filtered-quizzes', name: 'fetch_my_filtered_quizzes')]
+    public function fetchQuizzes(Request $request, AssignedQuizRepository $assignedQuizRepository, PaginatorInterface $paginator): JsonResponse {
+        $completionFilter = $request->query->get('completion');
+        $topicFilter = $request->query->get('topic');
+        $page = $request->query->getInt('page', 1);
+        $limit = 10; //Define how many items  per page
+
+        $user = $this->getUser();
+        $queryBuilder = $assignedQuizRepository->findByFiltersQueryBuilder($user, $completionFilter, $topicFilter);
+
+        $pagination = $paginator->paginate($queryBuilder, $page, $limit);
+
+        $serializedQuizzes = [];
+        foreach ($pagination as $quiz) {
+            $serializedQuizzes[] = [
+                // Data for the AssignedQuiz
+                'assignedQuizId' => $quiz->getId(),
+                'assignedQuizMark' => $quiz->getMark(),
+                'assignedQuizIsCompleted' => $quiz->isCompleted(),
+                'assignedQuizIsPassed' => $quiz->isPassed(),
+                // Data for the Quiz associated with the AssignedQuiz
+                'generatedDate' => $quiz->getGeneratedDate()->format('d-m-Y'),
+                'quizId' => $quiz->getQuiz()->getId(),
+                'topic' => $quiz->getQuiz()->getType(),
+                'assigner' => $quiz->getAssigner()->getName(),
+                'deadline' => $quiz->getDeadline()->format('d-m-Y'),
+                'overdue' => $quiz->calculateOverdueDays() > 0 ? 'Yes' : 'No',
+                'mark' => $quiz->getMark(),
+                'passed' => $quiz->isPassed() ? 'Passed' : 'Failed',
+                'complete' => $quiz->isCompleted() ? 'Completed' : 'Incomplete',
+            ];
+        }
+
+        $paginationData = [
+            'currentPage' => $pagination->getCurrentPageNumber(),
+            'totalPages' => ceil($pagination->getTotalItemCount() / $limit),
+            'itemsPerPage' => $limit,
+            'totalItems' => $pagination->getTotalItemCount(),
+        ];
+
+        return new JsonResponse([
+            'quizzes' => $serializedQuizzes,
+            'pagination' => $paginationData,
+        ]);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
 

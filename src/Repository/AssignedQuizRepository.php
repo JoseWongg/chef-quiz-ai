@@ -6,6 +6,7 @@ use App\Entity\AssignedQuiz;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @extends ServiceEntityRepository<AssignedQuiz>
@@ -21,6 +22,17 @@ class AssignedQuizRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, AssignedQuiz::class);
     }
+
+
+
+
+
+
+
+
+
+
+/**
 
 
     public function findByFilters(User $user, ?string $completionFilter, ?string $topicFilter): array
@@ -46,6 +58,45 @@ class AssignedQuizRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+
+**/
+
+
+
+
+    public function findByFiltersQueryBuilder(User $user, ?string $completionFilter, ?string $topicFilter): QueryBuilder {
+        $qb = $this->createQueryBuilder('aq')
+            ->leftJoin('aq.quiz', 'q')
+            ->where('aq.chef = :user')
+            ->setParameter('user', $user);
+
+        if ($completionFilter === 'completed') {
+            $qb->andWhere('aq.completed = true');
+        } elseif ($completionFilter === 'incomplete') {
+            $qb->andWhere('aq.completed = false');
+        }
+
+        if ($topicFilter) {
+            $qb->andWhere('q.type = :topic')
+                ->setParameter('topic', $topicFilter);
+        }
+
+        return $qb;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -15,10 +15,13 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Repository\UserRepository;
 use App\Repository\QuizRepository;
 use App\Services\AssignedQuizPreviewFormattingService;
+use Knp\Component\Pager\PaginatorInterface;
 
 
 class QuizRepositoryController extends AbstractController
 {
+
+
     // Method to display the list of quizzes
     #[Route('/quiz/repository', name: 'app_quiz_repository')]
     public function listQuizzes(EntityManagerInterface $entityManager): Response
@@ -159,8 +162,6 @@ class QuizRepositoryController extends AbstractController
     #[Route('/assigned-quiz/details/{id}', name: 'assigned_quiz_details')]
     public function assignedQuizDetails($id, AssignedQuizRepository $assignedQuizRepository, AssignedQuizPreviewFormattingService $assignedQuizPreviewFormattingService): Response
     {
-
-
         $assignedQuiz = $assignedQuizRepository->find($id);
         if (!$assignedQuiz) {
             throw $this->createNotFoundException('The assigned quiz does not exist.');
@@ -175,44 +176,94 @@ class QuizRepositoryController extends AbstractController
     }
 
 
-    // Method to Fetch filtered quizzes
+/**
+
+    // original version of the method
     #[Route('/fetch-filtered-quizzes', name: 'fetch_filtered_quizzes')]
-    public function fetchFilteredQuizzes(Request $request, QuizRepository $quizRepository, UserRepository $userRepository): JsonResponse
+    public function fetchFilteredQuizzes(Request $request, QuizRepository $QuizRepository): JsonResponse
     {
-        $dateFrom = $request->query->get('dateFrom');
-        $dateTo = $request->query->get('dateTo');
+        $trainerName = $request->query->get('trainer');
         $topic = $request->query->get('topic');
-        $trainerName = $request->query->get('trainerName');
+        $quizzes = $QuizRepository->findByFilters($trainerName, $topic);
+        $quizzesArray = [];
+        foreach ($quizzes as $quiz) {
 
-        try {
-            // Parse dates if provided
-            $dateFrom = $dateFrom ? new \DateTimeImmutable($dateFrom) : null;
-            $dateTo = $dateTo ? new \DateTimeImmutable($dateTo) : null;
-        } catch (\Exception $e) {
-            return new JsonResponse(['error' => 'Invalid date format.'], JsonResponse::HTTP_BAD_REQUEST);
-        }
-
-        // Get user by trainer name
-        $trainer = $userRepository->findOneBy(['name' => $trainerName]);
-
-        if (!$trainer) {
-            return new JsonResponse(['error' => 'Trainer not found.'], JsonResponse::HTTP_NOT_FOUND);
-        }
-
-        // Fetch quizzes by filters
-        $quizzes = $quizRepository->findByFilters($dateFrom, $dateTo, $topic, $trainer);
-
-        // Serialize quizzes to JSON
-        $serializedQuizzes = array_map(function ($quiz) {
-            return [
+            $quizzesArray[] = [
                 'id' => $quiz->getId(),
-                'creationDate' => $quiz->getCreationDate()->format('Y-m-d'),
-                'topic' => $quiz->getType(),
-                'trainerName' => $quiz->getTrainer()->getName(),
-                // Add other fields as needed
+                'creationDate' => $quiz->getCreationDate()->format('d-m-Y'),
+                'type' => $quiz->getType(),
+                'trainer' => [
+                    'name' => $quiz->getTrainer()->getName(),
+                ],
+                'detailsUrl' => $this->generateUrl('app_quiz_details', ['id' => $quiz->getId()]),
+                'historyUrl' => $this->generateUrl('app_quiz_history', ['id' => $quiz->getId()]),
+                'questionsLength' => count($quiz->getQuestions()),
             ];
-        }, $quizzes);
+        }
 
-        return new JsonResponse($serializedQuizzes);
+        return new JsonResponse($quizzesArray);
     }
+
+
+**/
+
+
+
+
+
+    #[Route('/fetch-filtered-quizzes', name: 'fetch_filtered_quizzes')]
+    public function fetchFilteredQuizzes(Request $request, QuizRepository $quizRepository, PaginatorInterface $paginator): JsonResponse
+    {
+        $trainerName = $request->query->get('trainer');
+        $topic = $request->query->get('topic');
+        $page = $request->query->getInt('page', 1);
+        $limit = 10; // Define how many items  per page
+
+        $queryBuilder = $quizRepository->findByFiltersQueryBuilder($trainerName, $topic);
+
+        $pagination = $paginator->paginate($queryBuilder, $page, $limit);
+
+        $quizzesArray = [];
+        foreach ($pagination as $quiz) {
+            $quizzesArray[] = [
+                'id' => $quiz->getId(),
+                'creationDate' => $quiz->getCreationDate()->format('d-m-Y'),
+                'type' => $quiz->getType(),
+                'trainerName' => $quiz->getTrainer() ? $quiz->getTrainer()->getName() : 'N/A',
+                'detailsUrl' => $this->generateUrl('app_quiz_details', ['id' => $quiz->getId()]),
+                'historyUrl' => $this->generateUrl('app_quiz_history', ['id' => $quiz->getId()]),
+                'questionsLength' => count($quiz->getQuestions()),
+            ];
+        }
+
+        // Preparing pagination data
+        $paginationData = [
+            'currentPage' => $pagination->getCurrentPageNumber(),
+            'totalPages' => ceil($pagination->getTotalItemCount() / $limit),
+            'itemsPerPage' => $limit,
+            'totalItems' => $pagination->getTotalItemCount(),
+        ];
+
+        return new JsonResponse([
+            'quizzes' => $quizzesArray,
+            'pagination' => $paginationData,
+        ]);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
