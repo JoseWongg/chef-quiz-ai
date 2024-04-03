@@ -1,0 +1,329 @@
+{% extends 'layout.html.twig' %}
+
+{% block layout_title %}Quiz Repository{% endblock %}
+
+{% block content %}
+
+    <h2 style="text-align: center; padding-bottom: 1em">Quiz Repository</h2>
+
+
+
+    {# section for the filter form #}
+    <div class="container mb-4" style="margin-top: 2em; padding-bottom: 3em">
+        <div class="row g-3">
+
+
+            <div class="col-md-2">
+                <label for="dateFrom" class="form-label">Date From:</label>
+                <input type="date" class="form-control" id="dateFrom">
+            </div>
+
+
+            <div class="col-md-2">
+                <label for="dateTo" class="form-label">Date To:</label>
+                <input type="date" class="form-control" id="dateTo">
+            </div>
+
+
+            <div class="col-md-3">
+                <label for="topicFilter" class="form-label">Filter by Topic:</label>
+                <select id="topicFilter" class="form-select">
+                    <option value="">All</option>
+                    {% for topic in topics %}
+                        <option value="{{ topic }}">{{ topic }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
+            <div class="col-md-4">
+                <label for="trainerFilter" class="form-label">Filter by Trainer:</label>
+                <select id="trainerFilter" class="form-select">
+                    <option value="">All</option>
+                    {% for user in users %}
+                        <option value="{{ user.name }}">{{ user.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
+            <div class="col-md-1 align-self-end">
+                <button id="filterButton" class="btn btn-primary w-100">Filter</button>
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th style="text-align: center" >Date Created</th>
+            <th style="text-align: center">Quiz ID</th>
+            <th style="text-align: center">Topic</th>
+            <th style="text-align: center">Trainer Name</th>
+              <th style="text-align: center"></th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {# if there isn't any quiz, display a message #}
+        {% if quizzes|length == 0 %}
+        <tr>
+            <td colspan="9" style="text-align: center">
+                <div class="alert alert-warning" role="alert">
+                    There are no Quizzes!
+                </div>
+            </td>
+        </tr>
+        {% else %}
+
+
+        {% for quiz in quizzes %}
+            <tr>
+                <td style="text-align: center">{{ quiz.creationDate|date('d-m-Y') }}</td>
+                <td style="text-align: center">{{ quiz.id }}</td>
+                <td style="text-align: center">{{ quiz.type }}</td>
+                <td style="text-align: center">{{ quiz.trainer.name }}</td>
+                <td style="text-align: center">
+                    <a href="{{ path('app_quiz_details', {'id': quiz.id}) }}" class="btn btn-primary">Details</a>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal" data-quiz-id="{{ quiz.id }}" data-questions="{{ quiz.questions|length }}">Assign</button>
+                    <a href="{{ path('app_quiz_history', {'id': quiz.id}) }}" class="btn btn-primary">History</a>
+                </td>
+            </tr>
+        {% endfor %}
+        {% endif %}
+        </tbody>
+    </table>
+
+
+    <!-- Assign Modal -->
+    <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignModalLabel">Assign Quiz</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="quizDeadline" style="margin-bottom: 1em">Select Deadline:</label>
+                        <input type="date" id="quizDeadline" name="deadline" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="passingScore" class="form-label" style="margin-bottom: 1em; margin-top: 2em">Select Number of Questions to Pass</label>
+                        <input type="number" class="form-control" id="passingScore" name="passingScore" min="1" max="" required>
+                    </div>
+                    <label for="assignForm" style="margin-top: 2em; margin-bottom: 1em">Select Staff Members:</label>
+                    <form id="assignForm">
+                        <!-- Dynamically populate this list with users -->
+                        {%  if users is defined and users is not empty %}
+                            {% for user in users %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ user.id }}" id="user{{ user.id }}">
+                                    <label class="form-check-label" for="user{{ user.id }}">
+                                        {{ user.name }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No users available</p>
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="assignQuiz()">Assign</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+
+        // Event listener for when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+
+
+            {# NEEDS DEBUGGING, NOT WORKING FILTERS FUNCTIONALITY #}
+            function fetchQuizzes() {
+                const dateFrom = document.getElementById('dateFrom').value;
+                const dateTo = document.getElementById('dateTo').value;
+                const topicFilter = document.getElementById('topicFilter').value.trim();
+                const trainerFilter = document.getElementById('trainerFilter').value;
+
+                // Update the URL below to the endpoint that handles your quiz filtering logic
+                const url = `/fetch-filtered-quizzes?dateFrom=${dateFrom}&dateTo=${dateTo}&topic=${encodeURIComponent(topicFilter)}&trainerName=${encodeURIComponent(trainerFilter)}`;
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(quizzes => {
+                        const tbody = document.querySelector('table.table tbody');
+                        tbody.innerHTML = ''; // Clear current table rows
+
+                        if (quizzes.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center">No quizzes found.</td></tr>';
+                            return;
+                        }
+
+                        quizzes.forEach(quiz => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                            <td style="text-align: center">${quiz.creationDate}</td>
+                            <td style="text-align: center">${quiz.id}</td>
+                            <td style="text-align: center">${quiz.topic}</td>
+                            <td style="text-align: center">${quiz.trainerName}</td>
+                            <td style="text-align: center">
+                                <a href="/quiz/${quiz.id}/details" class="btn btn-primary">Details</a>
+                                <!-- Consider dynamically generating other buttons if necessary -->
+                            </td>
+                        `;
+                            tbody.appendChild(row);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Failed to fetch quizzes:', error);
+                    });
+            }
+
+            // Place the event listeners for filter inputs here, after defining fetchQuizzes
+            //document.getElementById('dateFrom').addEventListener('change', fetchQuizzes);
+            //document.getElementById('dateTo').addEventListener('change', fetchQuizzes);
+            //document.getElementById('topicFilter').addEventListener('change', fetchQuizzes);
+            //document.getElementById('trainerFilter').addEventListener('change', fetchQuizzes);
+
+            document.getElementById('filterButton').addEventListener('click', fetchQuizzes);
+
+            // Call fetchQuizzes initially to load quizzes
+            fetchQuizzes();
+
+            // JavaScript for setting the minimum date for the quizDeadline input to today's date
+            var deadlineInput = document.getElementById('quizDeadline');
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+            var yyyy = today.getFullYear();
+            today = yyyy + '-' + mm + '-' + dd;
+            deadlineInput.setAttribute('min', today);
+
+            // JavaScript to dynamically set the max value for passingScore input
+            var assignButtons = document.querySelectorAll('button[data-bs-target="#assignModal"]');
+            assignButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var totalQuestions = this.getAttribute('data-questions');
+                    var passingScoreInput = document.getElementById('passingScore');
+                    passingScoreInput.setAttribute('max', totalQuestions);
+                    var quizId = this.getAttribute('data-quiz-id');
+                    document.getElementById('assignModal').setAttribute('data-quiz-id', quizId);
+                });
+            });
+
+            // JavaScript to handle the form submission for assigning a quiz
+            window.assignQuiz = function() {
+                // validate the form: at least one user must be selected, passingScore must be set, and deadline must be set
+                if (document.querySelectorAll('#assignForm .form-check-input:checked').length === 0) {
+                    alert('Please select at least one user to assign the quiz to.');
+                    return;
+                }
+                if (document.getElementById('passingScore').value === '') {
+                    alert('Please set the passing score.');
+                    return;
+                }
+                if (document.getElementById('quizDeadline').value === '') {
+                    alert('Please set the deadline.');
+                    return;
+                }
+
+                // For each checked checkbox, add the value to the selectedUsers array
+                const selectedUsers = [];
+                document.querySelectorAll('#assignForm .form-check-input:checked').forEach(input => {
+                    selectedUsers.push(input.value);
+                });
+                // Retrieve the quizId stored in the modal's attribute
+                const quizId = document.getElementById('assignModal').getAttribute('data-quiz-id');
+                const passingScore = document.getElementById('passingScore').value;
+                // Retrieve the deadline
+                const deadline = document.getElementById('quizDeadline').value;
+                // Prepare the data object with the correct structure
+                const assignmentData = {
+                    quizId: quizId,
+                    userIds: selectedUsers,
+                    passingScore: parseInt(passingScore),
+                    deadline: deadline
+                };
+                // Send a POST request to the server
+                fetch('/assign-quiz', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(assignmentData),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            // If the quiz was assigned successfully display a success message
+                            alert('Quiz assigned successfully.');
+                            bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while assigning the quiz.');
+                    })
+                    .finally (() => {
+
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
+                    });
+            };
+
+
+            // Target the close button of the modal
+            var closeButton = document.querySelector('#assignModal .btn-close');
+            closeButton.addEventListener('click', function() {
+                // Clear all checked checkboxes within the assignForm
+                document.querySelectorAll('#assignForm .form-check-input:checked').forEach(input => {
+                    input.checked = false;
+                });
+                // Reset other form elements if necessary
+                document.getElementById('passingScore').value = '';
+                document.getElementById('quizDeadline').value = '';
+            });
+            // Event listener for modal hidden event to handle case where modal is dismissed without clicking the close button
+            $('#assignModal').on('hidden.bs.modal', function () {
+                // Clear all checked checkboxes within the assignForm
+                document.querySelectorAll('#assignForm .form-check-input:checked').forEach(input => {
+                    input.checked = false;
+                });
+                // Reset other form elements if necessary
+                document.getElementById('passingScore').value = '';
+                document.getElementById('quizDeadline').value = '';
+            });
+
+        });
+    </script>
+{% endblock %}
+
+
+
+
+
+

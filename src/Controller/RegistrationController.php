@@ -21,8 +21,9 @@ use App\Services\PasswordHasher;
 class RegistrationController extends AbstractController
 {
     /**
-     * @Route("/register", name="app_register")
+     *
      * This method registers a new user.
+     *
      */
     #[Route('/register', name: 'app_register')]
     public function register(Request $request, PasswordHasher $passwordHasher, EntityManagerInterface $entityManager,  LoggerInterface $logger    ): Response
@@ -40,8 +41,8 @@ class RegistrationController extends AbstractController
 
 
             // Check if the email domain is for editors
-            if (str_ends_with($user->getEmail(), '@roastingreels.editor.com')) {
-                $user->setRoles(['ROLE_EDITOR']);
+            if (str_ends_with($user->getEmail(), '@chefquizai.trainer.com')) {
+                $user->setRoles(['ROLE_TRAINER']);
             } else {
                 $user->setRoles([]);
             }
@@ -56,7 +57,8 @@ class RegistrationController extends AbstractController
             ]);
 
             // Redirect to the login
-            return $this->redirectToRoute('app_login');
+            return $this->redirectToRoute('app_login', ['registrationSuccess' => '1'] );
+
         }
 
         // Render the registration form

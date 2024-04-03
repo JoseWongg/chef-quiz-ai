@@ -2,166 +2,695 @@
 
 {% block layout_title %}ChefQuizAI{% endblock %}
 
-
-{% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/style.css') }}">
-{% endblock %}
-
-
 {% block content %}
     <div class="row">
-        <!-- Left side panel for quiz generation -->
-        <div class="col-12 col-lg-2" style="padding-right: 50px;">
+        <div class="container">
             <form id="generate-quiz-form" class="mb-4">
-
-                <div class="mb-3">
-                    <label for="quiz-title" class="form-label" style="font-weight: bold;">Quiz Title</label>
-                    <input type="text" class="form-control" id="quiz-title" placeholder="Enter Title">
-                </div>
-
-                <div class="mb-3">
-
-                    <label for="quiz-type" class="form-label" style="font-weight: bold;">Quiz Type</label>
-                    <select class="form-select" id="quiz-type">
-                        <option value="" disabled selected>Select Type</option>
-                        <option value="Food safety">Food Safety</option>
-                        <option value="Cross contamination">Cross Contamination</option>
-                        <option value="Cooking Methods">Cooking Methods</option>
-                        <option value="Receiving and Storing Goods">Receiving and Storing Goods</option>
-                        <option value="Allergens">Allergens</option>
-                        <option value="Hygiene">Hygiene</option>
-                    </select>
-                </div>
-
-                <button type="button" class="btn btn-primary" id="generate-quiz-button" style="margin-top: 350px;">Generate Quiz</button>
-            </form>
-
-
-            <button class="btn btn-success" id="approve-quiz-button">Approve Quiz</button>
-        </div>
-
-        <!-- Right side panel for displaying the generated quiz as a manually controlled slider -->
-        <div class="col-12 col-lg-10">
-            <div id="quizCarousel" class="carousel slide" data-bs-ride="false">
-                <div class="carousel-inner">
-
-
-                    <!-- Case Scenario Slide -->
-                    <div class="carousel-item active">
-                        <div class="card mb-4" style="background-color: #0056b3; padding: 20px;">
-                            <div class="card-body">
-                                <h5 class="card-title" style="color: white;">Case Scenario</h5>
-                                <div style="position: relative; border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff; min-height: 635px; display: flex; align-items: center; justify-content: center; text-align: center;">
-                                    <!-- Loading Indicator-->
-                                    <div id="loading-indicator" class="text-center" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                        <span>Loading, please wait...</span>
-                                    </div>
-                                    <!-- Placeholder or dynamic GPT API content -->
-                                    <div id="case-scenario-content" style="line-height: 1.6; width: 100%;">
-                                        {% if scenarioText is defined %}
-                                            <p class="card-text case-scenario">{{ scenarioText }}</p>
-                                        {% else %}
-                                            <p class="card-text case-scenario">[Case Scenario will be displayed here]</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
+                <div class="row align-items-center">
+                    <div class="col-4">
+                        <div class="mb-3">
+                            <label for="quiz-type" class="form-label" style="font-weight: bold;">Quiz Type</label>
+                            <select class="form-select" id="quiz-type">
+                                <option value="Cross-contamination">Cross-contamination</option>
+                                <option value="Cooking Food">Cooking Food</option>
+                                <option value="Chilling Food">Chilling Food</option>
+                                <option value="Allergens">Allergens</option>
+                                <option value="Cleaning">Cleaning</option>
+                                <option value="Initial Food Safety Training">Initial Food Safety Training</option>
+                            </select>
                         </div>
                     </div>
 
-                    <!-- Question Slides -->
-                    {% for i in 1..5 %}
-                        <div class="carousel-item">
-                            <div class="card mb-4" style="background-color: #0056b3; padding: 20px;">
-                                <div class="card-body">
-                                    <h5 class="card-title" style="color: white;">Question {{ i }}</h5>
-                                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff;">
-                                        <p class="card-text question-text">[Question Text]</p>
-                                    </div>
+                    <div class="col-8">
+                    </div>
+                </div>
+            </form>
+        </div>
 
-                                    <!-- Answer Options for Question {{ i }} -->
-                                    <div class="options">
-                                        {% for j in 1..4 %}
-                                            <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; background-color: #f9f9f9;">
-                                                <h6>Option {{ j }}
-                                                    {% if j == 2 %} <!-- Simulate the correct answer for demonstration -->
-                                                        <span style="color: red;">Correct Answer</span>
-                                                    {% endif %}
-                                                </h6>
-                                                <div style="border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff;">
-                                                    <p style="font-size: small;">[Option Text]</p>
-                                                </div>
-                                                <div style="border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff; margin-top: 5px;">
-                                                    <small>[Feedback]</small>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
+        <!-- Left side panel for generating questions-->
+        <div class="col-12 col-lg-6">
+            <div class="mb-4 d-flex justify-content-between align-items-center" style="padding: 0 50px;">
+                    <button type="button" class="btn btn-primary" id="generate-question-button">Generate Question</button>
+                    <button type="button" class="btn btn-primary" id="edit-question-button" disabled>Edit Question</button>
+                    <button type="button" class="btn btn-primary" id="approve-question-button" disabled>Approve Question</button>
+            </div>
+
+            <!-- Question -->
+            <div class="card mb-4" style="background-color: #0056b3; padding: 10px;">
+                <div class="card-body">
+                    <h5 class="question-title" style="color: white; text-align: center">Question Template</h5>
+                    <h6 style="color: white;">Case Scenario</h6>
+                    <!--case scenario-->
+                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff; text-align: center">
+                        <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff; text-align: center; height: 120px; overflow-y: auto; position: relative;" id="case-scenario-container">
+                            <p class="case scenario" style="padding: 20px;">[Case Scenario]</p>
+                            <!-- Spinner absolutely positioned within the container -->
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none;" id="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
                             </div>
                         </div>
-                    {% endfor %}
-                </div>
 
-                <!-- Bootstrap carousel controls -->
-                <a class="carousel-control-prev" role="button" data-bs-target="#quizCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </a>
-                <a class="carousel-control-next" role="button" data-bs-target="#quizCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </a>
+                    </div>
+                    <h6 style="color: white;">Question</h6>
+                    <!-- Question text-->
+                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff;">
+                        <p class="question text" style="height: 50px; overflow-y: scroll;">[Question]</p>
+                    </div>
+                    <!-- Answer Options for Question -->
+                    <div class="options">
+                        {% for j in 1..4 %}
+                            <div class="option{{ j }}">
+                                <h6 style="color: white;">Option {{ j }}</h6>
+                                <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; background-color: #f9f9f9;">
+                                    <div class="option-text" style="border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff;">
+                                        <small>[Option Text]</small>
+                                    </div>
+                                    <div class="feedback" style="border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff; margin-top: 5px;">
+                                        <div style="height: 50px; overflow-y: scroll;">
+                                            <small>[Feedback]</small>
+                                        </div>
+
+                                    </div>
+                                    <div class="right-wrong" style="border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff; margin-top: 5px;">
+                                        <small>[Right/Wrong]</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side panel for quiz generation -->
+        <div class="col-12 col-lg-6" style="padding-right: 50px;">
+            <div class="mb-4 d-flex justify-content-between align-items-center" style="padding: 0 120px;">
+                <button class="btn btn-success" type="submit" id="preview-quiz-button" disabled>Preview Quiz</button>
+                <button class="btn btn-success" type="submit" id="approve-quiz-button" disabled>Approve Quiz</button>
+            </div>
+            <div class="card mb-4" style="background-color: #009933;">
+                <div class="card-body">
+                    <!--Panel title-->
+                    <h5 class="question-title" style="color: white; padding: 10px; text-align: center">Quiz Questions</h5>
+                    <!-- Accordion of questions (Generated via the "Approve Question" button, see javascript) -->
+                    <div class="accordion" id="questionsAccordion"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Modal to preview the quiz -->
+    <div class="modal fade" id="quizPreviewModal" tabindex="-1" aria-labelledby="quizPreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="quizPreviewModalLabel">Quiz Preview</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Quiz preview content will be injected here -->
+
+                    <div id="quiz-preview-content"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
         </div>
     </div>
 {% endblock %}
 
+
+
+
+
+
+
+
+
+
 {% block javascripts %}
     {{ parent() }}
-
     <script>
-        $(document).ready(function() {
-            $('#generate-quiz-button').click(function() {
-                // Hide case scenario content
-                $('#case-scenario-content').hide();
 
-                // Show loading indicator
-                $('#loading-indicator').show();
+        // Array to hold question data objects
+        let quizQuestions = [];
 
-                $.ajax({
-                    type: 'POST',
-                    url: '{{ path('app_generate_quizz') }}',
-                    success: function(data) {
-                        // Hide the loading indicator
-                        $('#loading-indicator').hide();
+        const quizType = document.getElementById('quiz-type').value;
 
-                        // Show case scenario content again
-                        $('#case-scenario-content').show();
 
-                        // Update the scenario text
-                        $('.case-scenario').text(data.scenarioText);
-                    },
-                    error: function() {
-                        // Hide the loading indicator
-                        $('#loading-indicator').hide();
+        document.addEventListener('DOMContentLoaded', function() {
 
-                        // Show case scenario content even if there's an error, could adjust based on requirements
-                        $('#case-scenario-content').show();
+            // Add event listener to the generate question button
+            document.getElementById('generate-question-button').addEventListener('click', function () {
 
-                        // Show an error message
-                        $('.case-scenario').text('Error occurred. Please try again.');
+                //deactivate the generate question button
+                document.getElementById('generate-question-button').disabled = true;
+
+                //deactivate the edit question button
+                document.getElementById('edit-question-button').disabled = true;
+
+                //deactivate the approve question button
+                document.getElementById('approve-question-button').disabled = true;
+
+                // clear the previous question content
+                clearQuestionContent();
+
+                // Show the spinner
+                toggleSpinner(true);
+
+                // Get the selected quiz type
+                var topic = document.getElementById('quiz-type').value;
+                var formData = new FormData();
+                formData.append('topic', topic);
+
+                // Send the request to generate a question
+                fetch('/generate/quiz', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                    // Parse the JSON response
+                    .then(response => response.json())
+                    // Update the question content
+                    .then(data => {
+                        // Check for errors returned by the server
+                        if (data.error) {
+                            console.error('Error:', data.error);
+                            // display the error message
+                            alert(data.error);
+                        } else {
+                            updateQuizContent(data.scenarioText);
+                        }
+
+                        //activate the generate question button
+                        document.getElementById('generate-question-button').disabled = false;
+                        //change the generate question button color to blue
+
+                        //activate the edit question button
+                        document.getElementById('edit-question-button').disabled = false;
+
+                        //activate the approve question button
+                        document.getElementById('approve-question-button').disabled = false;
+
+                        // Hide the spinner
+                        toggleSpinner(false);
+
+                    })
+                    // Handle any errors
+                    .catch((error) => {
+                        console.error('Error:', error);
+
+                        //activate the generate question button
+                        document.getElementById('generate-question-button').disabled = false;
+
+                        // Hide the spinner
+                        toggleSpinner(false);
+                    });
+            });
+
+            // Make the question fields editable
+            document.getElementById('edit-question-button').addEventListener('click', function () {
+                setEditable(true);
+            });
+
+            // Update the question content
+            function updateQuizContent(quizData) {
+                if (!quizData.scenario || !quizData.question) {
+                    alert("Error generating question. Please try again.");
+                    return;
+                }
+
+                let optionsMissing = false;
+                for (let i = 0; i < quizData.options.length; i++) {
+                    if (!quizData.options[i] || !quizData.options[i].text || !quizData.options[i].feedback || !quizData.options[i].correctness) {
+                        optionsMissing = true;
+                        break;
+                    }
+                }
+
+                if (optionsMissing) {
+                    alert("Error generating question. Please try again.");
+                    return;
+                }
+
+                // Update the question content
+                document.querySelector('.case.scenario').textContent = quizData.scenario;
+                document.querySelector('.question.text').textContent = quizData.question;
+                for (let i = 1; i <= 4; i++) {
+                    if (quizData.options[i - 1]) {
+                        document.querySelector('.option' + i + ' .option-text small').textContent = quizData.options[i - 1].text;
+                        document.querySelector('.option' + i + ' .feedback small').textContent = quizData.options[i - 1].feedback;
+                        document.querySelector('.option' + i + ' .right-wrong small').textContent = quizData.options[i - 1].correctness;
+                    }
+                }
+            }
+
+            // Clear the question content
+            function clearQuestionContent() {
+                document.querySelector('.case.scenario').textContent = '[Case Scenario]';
+                document.querySelector('.case.scenario').style.backgroundColor = 'white'; // Set background color to white
+                document.querySelector('.case.scenario').style.border = 'none'; // Remove border
+
+                document.querySelector('.question.text').textContent = '[Question]';
+                document.querySelector('.question.text').style.backgroundColor = 'white'; // Set background color to white
+                document.querySelector('.question.text').style.border = 'none'; // Remove border
+
+                for (let i = 1; i <= 4; i++) {
+                    const optionText = document.querySelector('.option' + i + ' .option-text small');
+                    optionText.textContent = '[Option Text]';
+                    optionText.style.backgroundColor = 'white'; // Set background color to white
+                    optionText.style.border = 'none'; // Remove border
+
+                    const feedbackText = document.querySelector('.option' + i + ' .feedback small');
+                    feedbackText.textContent = '[Feedback]';
+                    feedbackText.style.backgroundColor = 'white'; // Set background color to white
+                    feedbackText.style.border = 'none'; // Remove border
+
+                    // Remove radio buttons and replace with placeholder for correctness<<<<<<<<<<<
+                    const correctnessContainer = document.querySelector('.option' + i + ' .right-wrong');
+                    correctnessContainer.innerHTML = '<small>[Right/Wrong]</small>';
+                    correctnessContainer.style.backgroundColor = 'white'; // Set background color to white
+                    correctnessContainer.style.cssText = 'border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff; margin-top: 5px;';
+                }
+            }
+
+            // Function to make the question fields editable
+            function setEditable(editable) {
+                // Make the scenario and question content editable
+                document.querySelector('.case.scenario').contentEditable = editable;
+                document.querySelector('.question.text').contentEditable = editable;
+
+                for (let i = 1; i <= 4; i++) {
+                    document.querySelector('.option' + i + ' .option-text small').contentEditable = editable;
+                    document.querySelector('.option' + i + ' .feedback small').contentEditable = editable;
+
+                    // Handle the correctness field
+                    const correctnessContainer = document.querySelector('.option' + i + ' .right-wrong');
+                    if (editable) {
+                        // Read the current text to decide which radio button to select
+                        const currentCorrectness = correctnessContainer.textContent.trim().toLowerCase();
+                        const isRightSelected = currentCorrectness === 'right';
+                        const isWrongSelected = currentCorrectness === 'wrong';
+
+                        // Clear previous contents (if any)
+                        correctnessContainer.innerHTML = `
+                <label><input type="radio" name="correctness${i}" value="Right" ${isRightSelected ? 'checked' : ''}> Right</label>
+                <label><input type="radio" name="correctness${i}" value="Wrong" ${isWrongSelected ? 'checked' : ''}> Wrong</label>
+            `;
+                    } else {
+                        // Reset back to a simple text placeholder
+                        correctnessContainer.innerHTML = '<small>[Right/Wrong]</small>';
+                    }
+                }
+
+                // Change appearance to indicate editable fields
+                const editableElements = document.querySelectorAll('[contenteditable="true"]');
+                editableElements.forEach(element => {
+                    if (editable) {
+                        element.style.border = "1px dashed #4CAF50"; // Green dashed border
+                        element.style.backgroundColor = "#f0f0f0"; // Light grey background
+                        element.style.padding = "5px"; // Add padding
                     }
                 });
+            }
+
+
+            // Function to toggle the spinner
+            function toggleSpinner(show) {
+                document.getElementById('loading-spinner').style.display = show ? 'block' : 'none';
+            }
+
+
+            // Approve the question and add it to the quiz accordion.
+            document.getElementById('approve-question-button').addEventListener('click', function () {
+                // Before proceeding, validate the content
+                if (!validateQuestionContent()) {
+                    // If validation fails, exit the function without approving the question
+                    return;
+                }
+                // Calculate the question number based on the number of existing questions in the accordion
+                const questionNumber = document.querySelectorAll('.accordion-item').length + 1;
+                // Extract the case scenario
+                const scenarioText = document.querySelector('.case.scenario').textContent.trim();
+                // Extract the question text
+                const questionText = document.querySelector('.question.text').textContent.trim();
+                let optionsHtml = '';
+                // Dictionary to hold question data objects
+                let questionData = {
+                    scenario: scenarioText,
+                    question: questionText,
+                    options: [],
+                };
+                // Iterating over each option
+                document.querySelectorAll('.options > div').forEach((option, index) => {
+                    const optionText = option.querySelector('.option-text small').textContent.trim();
+                    const feedbackElement = option.querySelector('.feedback small');
+                    const feedbackText = feedbackElement ? feedbackElement.textContent.trim() : 'No feedback provided';
+                    // Check if the section is editable by looking for radio inputs
+                    const isEditable = option.querySelector('.right-wrong input[type="radio"]') !== null;
+                    let correctnessText = ''; // Default if neither is selected
+                    let correct = false; // Default value
+                    if (isEditable) {
+                        // Extract correctness from radio buttons
+                        option.querySelectorAll('.right-wrong input[type="radio"]').forEach(radio => {
+                            if (radio.checked) {
+                                // console log the value attribute of the radio button
+                                //console.log(radio.value);
+                                correctnessText = radio.value; // Will be 'Right' or 'Wrong'
+                                if (correctnessText === 'Right') {
+                                    correct = true;
+                                }
+                            }
+                        });
+                    } else {
+                        // Extract correctness from text directly if not in editable mode
+                        correctnessText = option.querySelector('.right-wrong').textContent.trim(); // Direct text extraction
+                            //console.log(correctnessText);
+                            if (correctnessText === 'Right') {
+                                correct = true;
+                            }
+                    }
+
+                    // Dictionary to hold option data objects
+                    let optionData = {
+                        optionText: optionText,
+                        feedback: feedbackText,
+                        isCorrect: correct,
+                        // Other fields can be assigned null or default values as needed
+                    };
+
+                    // Add the option data to the question data
+                    questionData.options.push(optionData);
+                    //console.log(optionTemp);
+                    // Add the option data to the options HTML
+                    optionsHtml += `<div>Option ${index + 1}: ${optionText}</div>
+                            <div>Feedback: ${feedbackText}</div>
+                            <div>Correctness: ${correctnessText}</div><br>`;
+                });
+
+                //console.log (questionData);
+                // Add the question to the quiz data array
+                quizQuestions.push(questionData);
+
+
+                const accordionItemHtml = `
+
+
+
+                        <div class="accordion-item" id="accordion-item-${questionNumber}" style="margin-bottom: 20px;">
+                            <h2 class="accordion-header" id="heading${questionNumber}">
+                                <button class="accordion-button collapsed" type="button" data-toggle="collapse" data-target="#collapse${questionNumber}" aria-expanded="false" aria-controls="collapse${questionNumber}">
+                                    Question ${questionNumber}
+                                </button>
+                            </h2>
+                            <div id="collapse${questionNumber}" class="accordion-collapse collapse" aria-labelledby="heading${questionNumber}">
+
+
+                                <!-- Add a delete button to remove the question from the quiz-->
+                                <button class="btn btn-danger" id="delete-question-button-${questionNumber}" style="align-items: center; margin-left: 10px; margin-top: 1em;">Delete</button>
+
+                                <div class="accordion-body">
+                                    <strong>Case Scenario:</strong> <p>${scenarioText}</p>
+                                    <strong>Question:</strong> <p>${questionText}</p>
+                                    <strong>Options:</strong> <div>${optionsHtml}</div>
+                                </div>
+                            </div>
+                        </div>`;
+
+
+
+
+
+
+                // Add the question to the quiz accordion
+                document.getElementById('questionsAccordion').insertAdjacentHTML('beforeend', accordionItemHtml);
+                // Set the question content to be non-editable
+                setEditable(false);
+                // Clear the question content
+                clearQuestionContent();
+                //deactivate the approve question button
+                document.getElementById('approve-question-button').disabled = true;
+                //deactivate the edit question button
+                document.getElementById('edit-question-button').disabled = true;
+                //deactivate the quiz type select
+                document.getElementById('quiz-type').disabled = true;
+                //activate the approve quiz button
+                document.getElementById('approve-quiz-button').disabled = false;
+                //activate the preview quiz button
+                document.getElementById('preview-quiz-button').disabled = false;
+                // Attach click event listener to the new accordion button
+                attachAccordionToggleListener(`heading${questionNumber}`);
             });
+
+            // Add event listener to the delete question button
+            document.getElementById('questionsAccordion').addEventListener('click', function(event) {
+                // Check if the clicked element is a delete button
+                if (event.target.matches('.btn-danger')) {
+                    const questionNumber = parseInt(event.target.id.replace('delete-question-button-', ''), 10);
+                    deleteQuestion(questionNumber);
+                }
+            });
+
+            // Function to delete a question from the quiz
+            function deleteQuestion(questionNumber) {
+                // Find the index of the question in the data array
+                const questionIndex = quizQuestions.findIndex((q, index) => index + 1 === questionNumber);
+                // Remove the question from the data array
+                if (questionIndex !== -1) {
+                    quizQuestions.splice(questionIndex, 1);
+                }
+
+                // If quizQuestion is empty, deactivate the approve quiz button and the preview quiz button, and active the quiz type select
+                if (quizQuestions.length === 0) {
+                    document.getElementById('quiz-type').disabled = false;
+                    document.getElementById('approve-quiz-button').disabled = true;
+                    document.getElementById('preview-quiz-button').disabled = true;
+                }
+
+                // Remove the question from the DOM
+                document.querySelector(`#accordion-item-${questionNumber}`).remove();
+
+                // Update the remaining questions
+                updateRemainingQuestions();
+            }
+
+            // Function to update the question numbers and IDs after deleting a question
+            function updateRemainingQuestions() {
+                const remainingAccordionItems = document.querySelectorAll('.accordion-item');
+                remainingAccordionItems.forEach((item, index) => {
+                    const newQuestionNumber = index + 1;
+                    item.id = `accordion-item-${newQuestionNumber}`;
+
+                    const header = item.querySelector('.accordion-header');
+                    header.id = `heading${newQuestionNumber}`;
+
+                    const button = item.querySelector('.accordion-button');
+                    button.dataset.target = `#collapse${newQuestionNumber}`;
+                    button.ariaControls = `collapse${newQuestionNumber}`;
+                    button.textContent = `Question ${newQuestionNumber}`;
+
+                    const collapse = item.querySelector('.accordion-collapse');
+                    collapse.id = `collapse${newQuestionNumber}`;
+                    collapse.setAttribute('aria-labelledby', `heading${newQuestionNumber}`);
+
+                    const deleteButton = item.querySelector('.btn-danger');
+                    deleteButton.id = `delete-question-button-${newQuestionNumber}`;
+                });
+            }
+
+
+
+
+            // Function to attach an event listener to the accordion button
+            function attachAccordionToggleListener(headingId) {
+                const headerButton = document.getElementById(headingId).querySelector('.accordion-button');
+                headerButton.addEventListener('click', function () {
+                    const collapseTarget = this.getAttribute('data-target');
+                    const targetEl = document.querySelector(collapseTarget);
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    if (isExpanded) {
+                        targetEl.classList.remove('show');
+                        this.setAttribute('aria-expanded', 'false');
+                    } else {
+                        targetEl.classList.add('show');
+                        this.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            }
+
+
+            // Validate the question content before approving it and adding it to the quiz accordion (Checks for empty fields and selected correctness radio buttons for each option)
+            function validateQuestionContent() {
+                // Validate Case Scenario
+                if (document.querySelector('.case.scenario').textContent.trim() === '[Case Scenario]' || document.querySelector('.case.scenario').textContent.trim() === '') {
+                    alert('The case scenario is required.');
+                    return false;
+                }
+
+                // Validate Question Text
+                if (document.querySelector('.question.text').textContent.trim() === '[Question]' || document.querySelector('.question.text').textContent.trim() === '') {
+                    alert('The question text is required.');
+                    return false;
+                }
+                //Counter for options marked as right
+                let rightCount = 0; // Counter for options marked as "Right"
+                let selectionCount = 0; // Counter for options with a selected correctness
+
+                // Validate Options, Feedback, and Correctness
+                for (let i = 1; i <= 4; i++) {
+
+                    const optionText = document.querySelector('.option' + i + ' .option-text small').textContent.trim();
+                    if (optionText === '[Option Text]' || optionText === '') {
+                        alert('All option texts are required.');
+                        return false;
+                    }
+
+                    const feedbackText = document.querySelector('.option' + i + ' .feedback small').textContent.trim();
+                    if (feedbackText === '[Feedback]' || feedbackText === '') {
+                        alert('All feedbacks are required.');
+                        return false;
+                    }
+
+
+                    const correctnessContainer = document.querySelector('.option' + i + ' .right-wrong');
+                    const isEditable = correctnessContainer.querySelector('input[type="radio"]') !== null;
+
+                    if (isEditable) {
+                        // Editable: Check if any radio button is selected
+                        const isSelected = correctnessContainer.querySelector('input[type="radio"]:checked') !== null;
+                        if (!isSelected) {
+                            alert(`Please select right or wrong for option ${i}.`);
+                            return false;
+                        } else {
+                            selectionCount++; // Increment if an option is selected
+                        }
+
+                        // Check if selected option is "Right"
+                        const isRightSelected = correctnessContainer.querySelector('input[type="radio"][value="Right"]:checked') !== null;
+                        if (isRightSelected) rightCount++;
+                    } else {
+                        // Non-editable: Check correctness text directly
+                        const correctnessText = correctnessContainer.textContent.trim();
+                        if (correctnessText === 'Right') {
+                            rightCount++;
+                            selectionCount++;
+                        } else if (correctnessText === 'Wrong') {
+                            selectionCount++;
+                        }
+                    }
+                }
+
+                // Check if all options have a correctness determination
+                if (selectionCount < 4) {
+                    alert('Each option must be marked as either "Right" or "Wrong".');
+                    return false;
+                }
+
+                // Check the rightCount to ensure exactly one option is marked as "Right"
+                if (rightCount !== 1) {
+                    alert('Please ensure exactly one option is marked as "Right" and the rest as "Wrong".');
+                    return false;
+                }
+
+                // If all checks pass
+                return true;
+            }
+
+
+            // Approve the quiz and send the data to the server
+            document.getElementById('approve-quiz-button').addEventListener('click', function () {
+                // Check if there are any questions in the quiz
+                if (quizQuestions.length === 0) {
+                    alert('Please add at least one question to the quiz.');
+                    return;
+                }
+                //console.log (JSON.stringify(quizQuestions));
+                const quizData = {
+                    quizType: quizType,
+                    questions: quizQuestions,
+                };
+
+                // Send the quiz data to the server
+                fetch('/generate/quiz/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify(quizData),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error:', data.error);
+                            alert('Error generating quiz. Please try again.');
+                        } else {
+                            alert('Quiz generated successfully.');
+                            // Clear the quiz data array
+                            quizQuestions = [];
+                            // Clear the quiz accordion
+                            document.getElementById('questionsAccordion').innerHTML = '';
+                            // Clear the question content
+                            clearQuestionContent();
+                            //deactivate the approve quiz button
+                            document.getElementById('approve-quiz-button').disabled = true;
+                            //activate the quiz type select
+                            document.getElementById('quiz-type').disabled = false;
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert('Error generating quiz. Please try again.');
+                    });
+
+            });
+
+
+            // Add event listener to the preview quiz button to show the modal with the quiz preview
+            document.getElementById('preview-quiz-button').addEventListener('click', function () {
+                const quizData = {
+                    quizType: document.getElementById('quiz-type').value,
+                    questions: quizQuestions,
+                };
+
+                let previewHtml = `<h2>Quiz Type: ${quizData.quizType}</h2>`;
+                quizData.questions.forEach((question, index) => {
+                    previewHtml += `
+            <div class="mb-4">
+                <h3>Question ${index + 1}: ${question.question}</h3>
+                <p><strong>Scenario:</strong> ${question.scenario}</p>
+                <ul class="list-unstyled">`;
+
+                    question.options.forEach((option, optionIndex) => {
+                        const isChecked = option.isCorrect ? 'checked' : '';
+                        previewHtml += `
+                <li>
+                    <div class="form-check" style="display: flex; align-items: center;"     >
+                       <input type="radio" name="question${index}Option" id="question${index}Option${optionIndex}" ${isChecked} style="margin-right: 5px;">
+                        <label class="form-check-label" for="question${index}Option${optionIndex}" style="flex: 1;">
+                            ${option.optionText}
+                        </label>
+                    </div>
+                </li>`;
+                    });
+
+                    previewHtml += `</ul></div>`;
+                });
+
+                document.getElementById('quiz-preview-content').innerHTML = previewHtml;
+                $('#quizPreviewModal').modal('show');
+            });
+
         });
+
     </script>
 {% endblock %}
-
-
-
-

@@ -17,7 +17,7 @@ class OptionTest extends TestCase
         $this->assertNull($option->getOptionText());
         $this->assertFalse($option->getIsCorrect());
         $this->assertNull($option->getFeedback());
-        $this->assertFalse($option->getIsSelected());
+        //$this->assertFalse($option->getIsSelected());
     }
 
     // Test the option setters and getters
@@ -28,12 +28,12 @@ class OptionTest extends TestCase
         $option->setOptionText('Option Text');
         $option->setIsCorrect(true);
         $option->setFeedback('Feedback Text');
-        $option->setIsSelected(true);
+        //$option->setIsSelected(true);
 
         $this->assertEquals('Option Text', $option->getOptionText());
         $this->assertTrue($option->getIsCorrect());
         $this->assertEquals('Feedback Text', $option->getFeedback());
-        $this->assertTrue($option->getIsSelected());
+        //$this->assertTrue($option->getIsSelected());
     }
 
     // Test the question relationship

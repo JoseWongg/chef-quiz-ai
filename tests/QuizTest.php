@@ -15,7 +15,6 @@ class QuizTest extends TestCase
     {
         $quiz = new Quiz();
 
-        $this->assertFalse($quiz->isApproved());
         $this->assertEmpty($quiz->getQuestions());
     }
 
@@ -26,14 +25,10 @@ class QuizTest extends TestCase
         $date = new \DateTime();
 
         $quiz->setType('Type');
-        $quiz->setTitle('Title');
         $quiz->setCreationDate($date);
-        $quiz->setCaseScenario('Case Scenario');
 
         $this->assertEquals('Type', $quiz->getType());
-        $this->assertEquals('Title', $quiz->getTitle());
         $this->assertEquals($date, $quiz->getCreationDate());
-        $this->assertEquals('Case Scenario', $quiz->getCaseScenario());
     }
 
     // Test the trainer relationship
@@ -63,15 +58,6 @@ class QuizTest extends TestCase
         $this->assertNotContains($question, $quiz->getQuestions());
     }
 
-    // Test the approval status
-    public function testApprovalStatus()
-    {
-        $quiz = new Quiz();
-
-        $quiz->setIsApproved(true);
-
-        $this->assertTrue($quiz->isApproved());
-    }
 
     // Test the AssignedQuiz creation method
     public function testCreateAssignedQuiz()

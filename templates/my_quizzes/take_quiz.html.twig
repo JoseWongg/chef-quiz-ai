@@ -1,0 +1,236 @@
+{% extends 'layout.html.twig' %}
+
+{% block layout_title %}ChefQuizAI{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12 col-lg-12">
+            <div id="quizCarousel" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner">
+                    <!-- Question Slides -->
+                    {% for question in formattedDetails %}
+
+                            <div class="carousel-item {% if loop.first %}active{% endif %}" data-question-id="{{ question.id }}">
+
+                            <div class="card mb-4" style="background-color: #0056b3; padding: 20px; margin-left: 2em">
+                                <div class="card-body" style="min-height: 713px;">
+                                    <h5 class="card-title" style="color: white; padding-bottom: 3em; text-align: center">Question {{ loop.index }}/{{ loop.length }}</h5>
+
+                                    <!-- Case Scenario for Question -->
+                                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff;">
+                                         <p class="card-text scenario-text">{{ question.caseScenario }}</p>
+                                    </div>
+
+                                    <!-- Question Text -->
+                                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff;">
+                                        <p class="card-text question-text">{{ question.questionText }}</p>
+                                    </div>
+
+                                    <!-- Answer Options for Question -->
+                                    <div class="options">
+                                        {% for option in question.options %}
+                                            <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; background-color: #f9f9f9;">
+                                                <div style="border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff;">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="question{{ loop.parent.loop.index }}"
+                                                               id="question{{ loop.parent.loop.index }}option{{ loop.index }}"
+                                                               value="option{{ loop.index -1 }}"
+                                                               data-is-correct="{{ option.isCorrect ? 'true' : 'false' }}"
+                                                               data-feedback="{{ option.feedback }}">
+                                                        <label class="form-check-label" for="question{{ loop.parent.loop.index }}option{{ loop.index }}">
+                                                            {{ option.optionText }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                        <div class="d-flex justify-content-between">
+                                            <!-- if it is not the first loop, then show the previous button. Else, show a spacer -->
+                                            {% if not loop.first %}
+                                                <button class="btn btn-dark previous-button-{{ loop.index }}" type="button" style="margin-top: 8em">Previous</button>
+                                            {% else %}
+                                                <div class="flex-grow-1"></div> <!-- Spacer for the first slide if needed -->
+                                            {% endif %}
+
+                                            <!-- if it is not the last loop, then show the next button -->
+                                            {% if not loop.last %}
+                                                <button class="btn btn-dark next-button-{{ loop.index }}" type="button" style="margin-top: 8em">Next</button>
+                                            {% else %}
+                                               <!--submit button-->
+                                                {# <button class="btn btn-dark submit-button" type="button" style="margin-top: 8em" data-passing-score="{{ assignedQuiz.passingScore }}">Submit</button> #}
+                                                <button class="btn btn-dark submit-button" type="button" style="margin-top: 8em" data-passing-score="{{ assignedQuiz.passingScore }}" data-assigned-quiz-id="{{ assignedQuiz.id }}">Submit</button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Results Slide -->
+                    <div class="carousel-item" id="resultsSlide">
+                        <div class="card mb-4" style="background-color: #0056b3; padding: 20px; margin-left: 2em">
+                            <div class="card-body">
+                                <h5 class="card-title" style="color: white; margin-bottom: 3em; text-align: center">Quiz Results</h5>
+                                <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff;">
+                                    <p id="passFailDisplay"></p>
+                                    <p id="scoreDisplay"></p>
+                                    <!-- Container for dynamically inserted feedback -->
+                                    <div id="feedbackContainer"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Determine the number of questions dynamically
+            const numberOfQuestions = document.querySelectorAll('.carousel-item').length - 1; // Subtract one for the feedback slide
+
+            // Enable Next button when a radio button is selected
+            for (let i = 1; i <= numberOfQuestions; i++) {
+                document.querySelectorAll(`input[name="question${i}"]`).forEach(function(radio) {
+                    radio.addEventListener('change', function() {
+                        let nextButton = document.querySelector(`.next-button-${i}`);
+                        if (nextButton) {
+                            nextButton.disabled = false; // Enable the Next button
+                        }
+                    });
+                });
+            }
+
+            // Handles previous buttons functionality in question slides
+            for (let i = 2; i <= numberOfQuestions; i++) {
+                let prevButton = document.querySelector(`.previous-button-${i}`);
+                if (prevButton) {
+                    prevButton.addEventListener('click', function() {
+                        $('#quizCarousel').carousel('prev');
+                    });
+                }
+            }
+
+            // Handles Next button functionality in question slide
+            for (let i = 1; i <= numberOfQuestions; i++) {
+                let nextButton = document.querySelector(`.next-button-${i}`);
+                if (nextButton) {
+                    nextButton.addEventListener('click', function(event) {
+                        // Check if any radio button in the current question has been selected
+                        const isSelected = document.querySelector(`input[name="question${i}"]:checked`);
+                        if (!isSelected) {
+                            // Prevent moving to the next slide and alert the user
+                            event.preventDefault(); // Prevent the carousel from moving to the next slide
+                            alert("Please select an option before moving to the next question.");
+                        } else {
+                            // Proceed to the next slide
+                            $('#quizCarousel').carousel('next');
+                        }
+                    });
+                }
+            }
+        });
+
+        // Handles Submit button functionality
+        const submitButton = document.querySelector('.submit-button');
+        submitButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            let correctAnswersCount = 0;
+            let feedbackHtml = '';
+            const questions = document.querySelectorAll('.carousel-item:not(:last-child)');
+            let responses = [];
+
+            // Loop through each question and construct the feedback HTML
+            questions.forEach((item, index) => {
+                const questionIndex = index + 1;
+                const caseScenario = item.querySelector('.scenario-text').textContent;
+                const questionText = item.querySelector('.question-text').textContent;
+                const options = item.querySelectorAll('input[type="radio"]');
+                const selectedOption = item.querySelector('input[type="radio"]:checked');
+                const questionId = item.getAttribute('data-question-id');
+
+                feedbackHtml += `<div style="margin-top: 2em; text-align: center"><strong>Question ${questionIndex}:</strong></div>`;
+                feedbackHtml += `<div style="margin-top: 2em"><strong>Case Scenario: </strong> ${caseScenario}</div>`;
+                feedbackHtml += `<div style="margin-top: 2em"><strong>Question: </strong> ${questionText}</div>`;
+
+                if (selectedOption) {
+                    const optionText = selectedOption.nextElementSibling.textContent;
+                    const isCorrect = selectedOption.dataset.isCorrect === 'true';
+                    const feedback = selectedOption.dataset.feedback;
+                    const optionId = selectedOption.value;
+                    //const optionTextContent = optionText.trim();
+
+                    // Add the selected option to the responses array
+                    responses.push({ questionId, selectedOptionId: optionId });
+                    //responses.push({ questionId, selectedOptionId: optionId, optionTextContent });
+
+                    feedbackHtml += `<div style="margin-top: 2em"><strong>Selected Answer: </strong>${optionText}</div>`;
+                    feedbackHtml += `<div style="margin-top: 2em"><strong>Is correct: </strong>${isCorrect ?'Yes</div>' : 'No</div>'}`;
+                    feedbackHtml += `<div style="margin-top: 2em"><strong>Feedback: </strong>${feedback}</div>`;
+
+                    //If the selected option is not correct, find the correct option and its feedback
+                    if (!isCorrect) {
+                        // Find the correct option and its feedback
+                        options.forEach(option => {
+                            if (option.dataset.isCorrect === 'true') {
+                                const correctOptionText = option.nextElementSibling.textContent;
+                                const correctFeedback = option.dataset.feedback;
+                                feedbackHtml += `<div style="margin-top: 2em"><strong>The correct answer was: </strong>${correctOptionText}</div>`;
+                                feedbackHtml += `<div style="margin-top: 2em"><strong>Feedback for the correct answer: </strong>${correctFeedback}</div>`;
+                            }
+                        });
+                    } else {
+                        correctAnswersCount++;
+                    }
+                } else {
+                    feedbackHtml += `No answer selected.</div>`;
+                }
+                feedbackHtml += `</div>`;
+            });
+
+            const totalQuestions = questions.length;
+            const scorePercentage = (correctAnswersCount / totalQuestions) * 100;
+            const didPass = correctAnswersCount >= parseInt(submitButton.dataset.passingScore, 10);
+
+            // Display results
+            const passFailDisplay = document.getElementById('passFailDisplay');
+            if (didPass) {
+                passFailDisplay.innerHTML = '<span style="color: #1c8000;">Congratulations! You Passed!</span>';
+            } else {
+                passFailDisplay.innerHTML = '<span style="color: red;">Sorry! You Failed!</span>';
+            }
+            // Display the score
+            document.getElementById('scoreDisplay').innerHTML = `<strong>Score:</strong> ${scorePercentage.toFixed(2)}% (${correctAnswersCount} out of ${totalQuestions})`;
+            // Insert constructed feedback HTML into the feedback container
+            document.getElementById('feedbackContainer').innerHTML = feedbackHtml;
+
+            // Submit responses to the backend
+            fetch(`/my/quizzes/${submitButton.dataset.assignedQuizId}/submit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ responses }) // Send the responses array to the backend
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Assigned quiz submission successful', data);
+                    // Navigate to the results slide or perform other success actions here
+                    $('#quizCarousel').carousel('next');
+                })
+                .catch(error => console.error('Error submitting responses:', error));
+
+            // Navigate to the results slide
+            $('#quizCarousel').carousel('next');
+        });
+
+    </script>
+
+{% endblock %}

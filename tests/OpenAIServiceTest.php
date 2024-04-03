@@ -2,6 +2,8 @@
 
 namespace App\Tests;
 
+use App\Repository\FoodSafetyBestPracticesRepository;
+use Doctrine\DBAL\Exception;
 use PHPUnit\Framework\TestCase;
 use App\Services\OpenAIService;
 use Psr\Log\LoggerInterface;
@@ -15,13 +17,14 @@ class OpenAIServiceTest extends TestCase
     {
         // Load the environment variables from the .env file
         $dotenv = new Dotenv();
-        $dotenv->loadEnv(__DIR__.'/../.env');
+        $dotenv->loadEnv(__DIR__.'/../.env.local');
 
         // Mock the LoggerInterface
         $loggerMock = $this->createMock(LoggerInterface::class);
 
         // Get the API key from the environment
         $apiKey = $_ENV['OPENAI_API_KEY'];
+
 
         // Ensure the CACERT_PATH is set for the test environment
         $cacertPath = $_ENV['CACERT_PATH'];
@@ -32,10 +35,13 @@ class OpenAIServiceTest extends TestCase
         $this->openAIService = new OpenAIService($apiKey, $loggerMock);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testApiConnectivity()
     {
         // Assuming the `generateQuizCaseScenario` method doesn't require a prompt argument based on your service definition
-        $response = $this->openAIService->generateQuizCaseScenario();
+        $response = $this->openAIService->generateQuestion('food safety');
 
         // Ensures the response is not empty
         $this->assertNotEmpty($response);

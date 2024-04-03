@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\AssignedQuiz;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -20,6 +21,42 @@ class AssignedQuizRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, AssignedQuiz::class);
     }
+
+
+    public function findByFilters(User $user, ?string $completionFilter, ?string $topicFilter): array
+    {
+
+        $qb = $this->createQueryBuilder('aq')
+            ->leftJoin('aq.quiz', 'q')
+            ->where('aq.chef = :user')
+            ->setParameter('user', $user);
+
+        // Filter by completion status
+        if ($completionFilter === 'completed') {
+            $qb->andWhere('aq.completed = true');
+        } elseif ($completionFilter === 'incomplete') {
+            $qb->andWhere('aq.completed = false');
+        }
+
+        // Filter by topic
+        if ($topicFilter) {
+            $qb->andWhere('q.type = :topic')
+                ->setParameter('topic', $topicFilter);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 //    /**
 //     * @return AssignedQuiz[] Returns an array of AssignedQuiz objects

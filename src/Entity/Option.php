@@ -30,8 +30,11 @@ class Option
     #[ORM\Column(type: "text")]
     private ?string $feedback = null;
 
+    /*
     #[ORM\Column(type: "boolean")]
     private ?bool $isSelected = false;
+    */
+
 
     public function getId(): ?int
     {
@@ -85,7 +88,7 @@ class Option
 
         return $this;
     }
-
+/*
     public function getIsSelected(): ?bool
     {
         return $this->isSelected;
@@ -97,4 +100,7 @@ class Option
 
         return $this;
     }
+*/
+
+
 }

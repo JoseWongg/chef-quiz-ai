@@ -21,10 +21,6 @@ class Quiz
     #[Assert\NotBlank]
     private ?string $type = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
-    private ?string $title = null;
-
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "createdQuizzes")]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $trainer = null;
@@ -33,16 +29,8 @@ class Quiz
     #[Assert\NotBlank]
     private ?\DateTimeInterface $creationDate = null;
 
-    #[ORM\Column(type: "text")]
-    #[Assert\NotBlank]
-    private ?string $caseScenario = null;
-
-
     #[ORM\OneToMany(mappedBy: "quiz", targetEntity: Question::class, cascade: ["persist"], orphanRemoval: true)]
     private Collection $questions;
-
-    #[ORM\Column(type: "boolean")]
-    private bool $isApproved = false;
 
     public function __construct()
     {
@@ -65,16 +53,6 @@ class Quiz
         return $this;
     }
 
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(string $title): self
-    {
-        $this->title = $title;
-        return $this;
-    }
 
     public function getTrainer(): ?User
     {
@@ -98,16 +76,6 @@ class Quiz
         return $this;
     }
 
-    public function getCaseScenario(): ?string
-    {
-        return $this->caseScenario;
-    }
-
-    public function setCaseScenario(string $caseScenario): self
-    {
-        $this->caseScenario = $caseScenario;
-        return $this;
-    }
 
     /**
      * @return Collection|Question[]
@@ -137,16 +105,6 @@ class Quiz
         return $this;
     }
 
-    public function isApproved(): bool
-    {
-        return $this->isApproved;
-    }
-
-    public function setIsApproved(bool $isApproved): self
-    {
-        $this->isApproved = $isApproved;
-        return $this;
-    }
 
     public function createAssignedQuiz(): AssignedQuiz
     {
@@ -155,5 +113,16 @@ class Quiz
         $assignedQuiz->setGeneratedDate(new \DateTime());
 
         return $assignedQuiz;
+    }
+
+    //get question by id
+    public function getQuestionById(int $id): ?Question
+    {
+        foreach ($this->questions as $question) {
+            if ($question->getId() === $id) {
+                return $question;
+            }
+        }
+        return null;
     }
 }

@@ -18,16 +18,34 @@ class Question
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
+    public function getCaseScenario(): ?string
+    {
+        return $this->caseScenario;
+    }
+
+    public function setCaseScenario(?string $caseScenario): void
+    {
+        $this->caseScenario = $caseScenario;
+    }
+
     #[ORM\ManyToOne(targetEntity: Quiz::class, inversedBy: "questions")]
     #[ORM\JoinColumn(nullable: false)]
     private ?Quiz $quiz = null;
+
+
+    #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank]
+    private ?string $caseScenario = null;
+
 
     #[ORM\Column(type: 'text')]
     #[Assert\NotBlank]
     private ?string $questionText = null;
 
+
     #[ORM\OneToMany(mappedBy: "question", targetEntity: Option::class, cascade: ["persist"], orphanRemoval: true)]
     private Collection $options;
+
 
     public function __construct()
     {
@@ -89,6 +107,17 @@ class Question
             }
         }
         return $this;
+    }
+
+    //get option by id
+    public function getOptionById(int $id): ?Option
+    {
+        foreach ($this->options as $option) {
+            if ($option->getId() === $id) {
+                return $option;
+            }
+        }
+        return null;
     }
 
 }

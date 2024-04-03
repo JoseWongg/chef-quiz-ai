@@ -1,0 +1,77 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Quiz History{% endblock %}
+
+{% block content %}
+
+    <!--Button to go back to the quiz repository-->
+    <div class="container">
+        <a href="{{ path('app_quiz_repository') }}" class="btn btn-primary">Back to Quiz Repository</a>
+
+
+    <div class="container">
+        <h2 style="text-align: center; padding-bottom: 1em">Quiz History</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th style="text-align: center" >Assignment Date</th>
+                <th style="text-align: center">Staff Member</th>
+                <th style="text-align: center">Deadline</th>
+                <th style="text-align: center">Overdue</th>
+                <th style="text-align: center">Mark</th>
+                <th style="text-align: center">Passed</th>
+                <th style="text-align: center"></th>
+            </tr>
+            </thead>
+            <tbody>
+
+
+            {# if there isn't any quiz, display a message #}
+            {% if assignments|length == 0 %}
+            <tr>
+                <td colspan="9" style="text-align: center">
+                    <div class="alert alert-warning" role="alert">
+                        There are no Quizzes!
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+
+            {% for assignment in assignments %}
+                <tr>
+                    <td style="text-align: center">{{ assignment.generatedDate|date('d-m-Y') }}</td>
+                    <td style="text-align: center" >{{ assignment.chef.name }}</td>
+                    <td style="text-align: center">{{ assignment.deadline|date('d-m-Y') }}</td>
+                    <td>
+                        <div class="d-flex justify-content-center">
+                            {% if assignment.completed==false and assignment.calculateOverdueDays()>0%}
+                                <span class="badge bg-danger">Yes</span>
+                            {% else %}
+                                <span class="badge bg-success">No</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td style="text-align: center" >{{ assignment.isCompleted ? assignment.mark ~ ' %': 'N/A' }}</td>
+
+                    <!- if the user has passed the quiz, then the passed column will be checked, else it will be empty -->
+                   {%  if assignment.isCompleted %}
+                        {% if assignment.isPassed %}
+                            <td style="text-align: center"><i class="bi bi-check-circle-fill text-success"></i></td>
+                        {% else %}
+                            <td style="text-align: center"><i class="bi bi-x-circle-fill text-danger"></i></td>
+                        {% endif %}
+                    {% else %}
+                        <td style="text-align: center"><i class="bi bi-circle text-muted"></i></td>
+                    {% endif %}
+
+
+                    <td style="text-align: center">
+                        <a href="{{ path('assigned_quiz_details', {'id': assignment.id}) }}" class="btn btn-primary">Details</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

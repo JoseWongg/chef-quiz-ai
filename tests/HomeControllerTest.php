@@ -18,12 +18,12 @@ class HomeControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/');
         // Check that the HTTP status code is 200 (OK)
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        // Call a helper method to assert that the controller is HomeController
+        // Call a helper method to assert that the controller is HomeControllerRRR
         $this->assertControllerIsHomeController($client);
     }
 
     /**
-     * Helper method to assert that the controller is HomeController.
+     * Helper method to assert that the controller is HomeControllerRRR.
      *
      * @param KernelBrowser $client The client instance.
      */

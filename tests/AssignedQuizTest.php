@@ -58,7 +58,7 @@ class AssignedQuizTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $question = new Question();
             $option = new Option();
-            $option->setIsSelected($i < 2); // Select the first 2 questions
+            //$option->setIsSelected($i < 2); // Select the first 2 questions
             $question->addOption($option);
             $quiz->addQuestion($question);
         }
@@ -83,7 +83,7 @@ class AssignedQuizTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $question = new Question();
             $option = new Option();
-            $option->setIsSelected(true);
+            //$option->setIsSelected(true);
             $option->setIsCorrect($i % 2 === 0); // Correct alternate options
             $question->addOption($option);
             $quiz->addQuestion($question);

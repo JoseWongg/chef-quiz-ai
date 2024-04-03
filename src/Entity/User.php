@@ -45,7 +45,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $plainPassword = null;
 
     /**
-     * @var string The hashed password
+     * @var string|null The hashed password
      */
     #[ORM\Column]
     private ?string $password = null;
@@ -79,7 +79,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      *
-     * @return string
+     * @return int|null Returns the id of the user.
      * Returns the id of the user.
      */
     public function getId(): ?int
@@ -89,7 +89,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      *
-     * @return string
+     * @return string|null Returns the name of the user.
      * Returns the name of the user.
      */
     public function getEmail(): ?string
@@ -214,7 +214,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function eraseCredentials(): void
     {
-        // If you store any temporary, sensitive data on the user, clear it here
+        // If any temporary data is stored (sensitive data on the user) it clears it here
         $this->plainPassword = null;
     }
 
@@ -292,12 +292,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $chef->addReceivedQuiz($assignedQuiz);
     }
 
-
+    // Set the chef of the AssignedQuiz and add it to the chef's receivedQuizzes
     public function addReceivedQuiz(AssignedQuiz $assignedQuiz): self
     {
         if (!$this->receivedQuizzes->contains($assignedQuiz)) {
             $this->receivedQuizzes[] = $assignedQuiz;
-            $assignedQuiz->setChef($this); // Set the chef of the AssignedQuiz
+            $assignedQuiz->setChef($this);
         }
 
         return $this;

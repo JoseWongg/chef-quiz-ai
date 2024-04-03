@@ -1,0 +1,60 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}My Quiz Details{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <!-- Button to go back to the quiz history page passing the quiz id -->
+        <a href="{{ path('app_my_quizzes', {'id': assignedQuiz.getQuiz().getId()}) }}" class="btn btn-primary">Back to My Quizzes</a>
+
+        <h2 style="text-align: center; margin-bottom: 1em">Assigned Quiz Details</h2>
+
+
+        {% for questionDetail in formattedDetails %}
+
+            {% set selectedOption = assignedQuiz.getSelectedOptionId(loop.index -1) %}
+
+            <div>
+                <h3 style="margin-top: 3em">Question {{ loop.index }}</h3>
+
+                <p style="margin-top: 1em"><strong>Scenario:</strong> {{ questionDetail.caseScenario }}</p>
+                <p><strong>Question:</strong> {{ questionDetail.questionText }}</p>
+
+                <ul>
+                    {% for option in questionDetail.options %}
+                        <li>
+
+                            <!-- If the option is correct, then display it in bold -->
+                            {% if option.isCorrect %}
+                                <strong style="color: limegreen">>>>RIGHT>>></strong>
+                            {% else %}
+                                <strong style="color: red">>>WRONG>>></strong>
+                            {% endif %}
+
+                            {{ option.optionText }}
+
+
+                            <!-- If the option is the correct one, then display in green -->
+                            {% if option.isCorrect %}
+
+
+                                {% if option.id == selectedOption %}
+                                    <strong style="color: limegreen">SELECTED CORRECT</strong>
+                                {% endif %}
+
+                            {%else%}
+                                {% if option.id == selectedOption %}
+                                    <strong style="color: red">SELECTED WRONG</strong>
+                                {% endif %}
+                            {% endif %}
+
+                            <div style="margin-left: 1em; margin-top: 1em; margin-bottom: 2em">
+                                <strong>Feedback:</strong> {{ option.feedback }}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

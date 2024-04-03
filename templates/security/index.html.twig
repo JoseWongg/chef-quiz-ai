@@ -42,3 +42,20 @@
     </div>
 
 {% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            console.log(urlParams);
+            const registrationSuccess = urlParams.get('registrationSuccess');
+            console.log(registrationSuccess);
+            if (registrationSuccess) {
+                alert('Your account has been created successfully. You can now log in.');
+            }
+        });
+    </script>
+{% endblock %}

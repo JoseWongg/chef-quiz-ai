@@ -56,7 +56,7 @@ security:
                 # Enables CSRF protection for the form.
                 enable_csrf: true
                 # The default target path to redirect to after login.
-                default_target_path: '/dashboard'
+                default_target_path: '/my/quizzes'
             # This tells symfony to use a form to log users out.
             logout:
                 # The route name that the user can use to log out.
