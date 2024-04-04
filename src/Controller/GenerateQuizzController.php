@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use App\Services\OpenAIService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface as Logger;
 
 
 class GenerateQuizzController extends AbstractController
@@ -22,7 +23,7 @@ class GenerateQuizzController extends AbstractController
      * @throws Exception
      */
     #[Route('/generate/quiz', name: 'app_generate_quiz', methods: ['GET', 'POST'])]
-    public function index(Request $request, OpenAIService $openAIService): Response|JsonResponse
+    public function index(Request $request, OpenAIService $openAIService, Logger $logger): Response|JsonResponse
     {
         if ($request->isMethod('POST')) {
 
@@ -34,16 +35,38 @@ class GenerateQuizzController extends AbstractController
                 $responseContent = $openAIService->generateQuestion($topic);
 
                 if (isset($responseContent['error'])) {
+
                     // Handle error here, return JSON response with error
                     return new JsonResponse(['error' => 'Error generating question. Please try again.']);
+
                 } else {
 
                     // Parse the response to separate the scenario from the actions
                     $scenarioText = $this->parseApiResponse($responseContent['response']);
 
-                    // Return JSON response with scenario text
-                    return new JsonResponse(['scenarioText' => $scenarioText]);
+                    //If the response is an error
+                    if (isset($scenarioText['error'])) {
+                        // log the error
+                        $logger->error('Parsing Failed! (First Question)');
+
+
+                        // Make another api call
+                        $responseContent = $openAIService->generateQuestion($topic);
+                        $scenarioText = $this->parseApiResponse($responseContent['response']);
+                        //If the response is an error
+                        if (isset($scenarioText['error'])) {
+                            // log the error
+                            $logger->error('Parsing Failed! (Second Question)');
+                        }
+                        return new JsonResponse(['scenarioText' => $scenarioText]);
+
+                    } else {
+                        // Return JSON response with scenario text
+                        return new JsonResponse(['scenarioText' => $scenarioText]);
+                    }
                 }
+
+
             } else {
                 // Handle non-AJAX POST request
                 // Render the initial template with error message
@@ -182,8 +205,3 @@ class GenerateQuizzController extends AbstractController
         return new JsonResponse(['status' => 'success', 'message' => 'Quiz saved successfully']);
     }
 }
-
-
-
-
-

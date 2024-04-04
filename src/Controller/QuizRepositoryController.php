@@ -250,20 +250,4 @@ class QuizRepositoryController extends AbstractController
         ]);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

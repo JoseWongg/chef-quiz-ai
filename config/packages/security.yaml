@@ -93,12 +93,20 @@ security:
         # Logout - Restricted to authenticated users
         - { path: ^/logout$, roles: IS_AUTHENTICATED_FULLY }
 
-        # Admin area - Restricted to ROLE_EDITOR users
-        #- { path: ^/editor-only, roles: ROLE_EDITOR }
+        # Restrict access to specific routes for ROLE_TRAINER users
+        - { path: ^/generate/quiz, roles: ROLE_TRAINER }
+        - { path: ^/generate/quiz/save, roles: ROLE_TRAINER }
+        - { path: ^/quiz/repository, roles: ROLE_TRAINER }
+        - { path: ^/quiz/details/.*$, roles: ROLE_TRAINER }
+        - { path: ^/assign-quiz, roles: ROLE_TRAINER }
+        - { path: ^/quiz/history/.*$, roles: ROLE_TRAINER }
+        - { path: ^/assigned-quiz/details/.*$, roles: ROLE_TRAINER }
+        - { path: ^/fetch-filtered-quizzes, roles: ROLE_TRAINER }
 
-        # Test Insert Movie - development-only route
-        # This is accessible only to users with ROLE_ADMIN in the 'dev' environment
-        #- { path: ^/test-insert-movie$, roles: ROLE_ADMIN }
+        # Restrict all other routes to authenticated users
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+
+
 
 when@test:
     security:

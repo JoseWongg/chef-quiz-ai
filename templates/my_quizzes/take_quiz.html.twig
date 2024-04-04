@@ -92,7 +92,18 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
+
+
         document.addEventListener("DOMContentLoaded", function() {
+
+            // Prevent accidental page reload
+            window.addEventListener('beforeunload', function(e) {
+                e.returnValue = true;
+                return true;
+            });
+
+
+
             // Determine the number of questions dynamically
             const numberOfQuestions = document.querySelectorAll('.carousel-item').length - 1; // Subtract one for the feedback slide
 

@@ -147,6 +147,17 @@
 
         document.addEventListener('DOMContentLoaded', function() {
 
+
+
+
+            // Prevent accidental page reload
+            window.addEventListener('beforeunload', function(e) {
+                e.returnValue = true;
+                return true;
+            });
+
+
+
             // Add event listener to the generate question button
             document.getElementById('generate-question-button').addEventListener('click', function () {
 
@@ -166,8 +177,8 @@
                 toggleSpinner(true);
 
                 // Get the selected quiz type
-                var topic = document.getElementById('quiz-type').value;
-                var formData = new FormData();
+                const topic = document.getElementById('quiz-type').value;
+                const formData = new FormData();
                 formData.append('topic', topic);
 
                 // Send the request to generate a question
@@ -185,7 +196,6 @@
                         // Check for errors returned by the server
                         if (data.error) {
                             console.error('Error:', data.error);
-                            // display the error message
                             alert(data.error);
                         } else {
                             updateQuizContent(data.scenarioText);

@@ -27,28 +27,16 @@
 
                             <li class="nav-item"><a href="{{ path('home') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('home') ? 'active' : '' }}" aria-current="page">Home</a></li>
                             <li class="nav-item"><a href="{{ path('app_my_quizzes') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_my_quizzes') ? 'active' : '' }}">My Quizzes</a></li>
-                           {#  <li class="nav-item"><a href="{{ path('dashboard') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('dashboard') ? 'active' : '' }}">Dashboard</a></li>#}
-                            <li class="nav-item"><a href="{{ path('app_quiz_repository') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_quiz_repository') ? 'active' : '' }}">Quiz Repository</a></li>
-                            <li class="nav-item"><a href="{{ path('app_generate_quiz') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_generate_quiz') ? 'active' : '' }}">Generate Quiz</a></li>
+
+                            {% if is_granted('ROLE_TRAINER') %}
+                                <li class="nav-item"><a href="{{ path('app_quiz_repository') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_quiz_repository') ? 'active' : '' }}">Quiz Repository</a></li>
+                                <li class="nav-item"><a href="{{ path('app_generate_quiz') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_generate_quiz') ? 'active' : '' }}">Generate Quiz</a></li>
+                            {% endif %}
 
 
-
-
-
-
-
+                            <li class="nav-item"><a href="{{ path('profile_edit') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('profile_edit') ? 'active' : '' }}">Account</a></li>
 
                             <li class="nav-item"><a href="{{ path('app_logout') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_logout') ? 'active' : '' }}">Logout</a></li>
-
-
-
-
-
-
-
-
-
-
 
                         {% else %}
                             <li class="nav-item"><a href="{{ path('home') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('home') ? 'active' : '' }}" aria-current="page">Home</a></li>
