@@ -94,14 +94,14 @@ security:
         - { path: ^/logout$, roles: IS_AUTHENTICATED_FULLY }
 
         # Restrict access to specific routes for ROLE_TRAINER users
-        #- { path: ^/generate/quiz, roles: ROLE_TRAINER }
-        #- { path: ^/generate/quiz/save, roles: ROLE_TRAINER }
-        #- { path: ^/quiz/repository, roles: ROLE_TRAINER }
-        #- { path: ^/quiz/details/.*$, roles: ROLE_TRAINER }
-        #- { path: ^/assign-quiz, roles: ROLE_TRAINER }
-        #- { path: ^/quiz/history/.*$, roles: ROLE_TRAINER }
-        #- { path: ^/assigned-quiz/details/.*$, roles: ROLE_TRAINER }
-        #- { path: ^/fetch-filtered-quizzes, roles: ROLE_TRAINER }
+        - { path: ^/generate/quiz, roles: ROLE_TRAINER }
+        - { path: ^/generate/quiz/save, roles: ROLE_TRAINER }
+        - { path: ^/quiz/repository, roles: ROLE_TRAINER }
+        - { path: ^/quiz/details/.*$, roles: ROLE_TRAINER }
+        - { path: ^/assign-quiz, roles: ROLE_TRAINER }
+        - { path: ^/quiz/history/.*$, roles: ROLE_TRAINER }
+        - { path: ^/assigned-quiz/details/.*$, roles: ROLE_TRAINER }
+        - { path: ^/fetch-filtered-quizzes, roles: ROLE_TRAINER }
 
         # Restrict all other routes to authenticated users
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
