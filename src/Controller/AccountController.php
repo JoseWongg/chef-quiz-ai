@@ -21,7 +21,7 @@ class AccountController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
         SessionInterface $session,
-        TokenStorageInterface $tokenStorage // Injected TokenStorageInterface
+        TokenStorageInterface $tokenStorage
     ): Response {
         $user = $this->getUser();
         $form = $this->createForm(UserAccountType::class, $user);
