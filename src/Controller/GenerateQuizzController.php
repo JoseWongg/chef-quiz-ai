@@ -36,7 +36,7 @@ class GenerateQuizzController extends AbstractController
 
                 if (isset($responseContent['error'])) {
 
-                    // Handle error here, return JSON response with error
+                    // Handle error, return JSON response with error
                     return new JsonResponse(['error' => 'Error generating question. Please try again.']);
 
                 } else {
