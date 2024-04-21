@@ -145,17 +145,61 @@ class QuizRepositoryController extends AbstractController
     }
 
 
-    // Method to view the list of assigned quizzes for a specific quiz
     #[Route('/quiz/history/{id}', name: 'app_quiz_history')]
-    public function quizHistory(int $id, AssignedQuizRepository $assignedQuizRepository): Response
+    public function quizHistory(int $id, Request $request, AssignedQuizRepository $assignedQuizRepository, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
+        $userRepository = $entityManager->getRepository(User::class);
+        $users = $userRepository->findAll();
 
-        $assignments = $assignedQuizRepository->findBy(['quiz' => $id], ['generatedDate' => 'ASC']);
+        $userId = $request->query->get('user');
+        $page = $request->query->getInt('page', 1); // Default to the first page if not specified
+        // Number of items per page
+        $limit = 10;
+
+        $criteria = ['quiz' => $id];
+        if (!empty($userId)) {
+            $criteria['chef'] = $userId;
+        }
+
+        $queryBuilder = $assignedQuizRepository->createQueryBuilder('a')
+            ->where('a.quiz = :quiz')
+            ->setParameter('quiz', $id);
+
+        if ($userId) {
+            $queryBuilder->andWhere('a.chef = :chef')
+                ->setParameter('chef', $userId);
+        }
+
+        $queryBuilder->orderBy('a.generatedDate', 'ASC');
+        $assignments = $paginator->paginate($queryBuilder, $page, $limit);
 
         return $this->render('quiz_repository/quiz_history.html.twig', [
             'assignments' => $assignments,
+            'users' => $users,
+            'currentPage' => $page,
+            'totalPages' => ceil($assignments->getTotalItemCount() / $limit),
+            'id' => $id,
         ]);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     // Method to view the details of an assigned quiz
@@ -207,20 +251,22 @@ class QuizRepositoryController extends AbstractController
 
 **/
 
+/**
 
-
-
+    // Method to fetch quizzes based on filter criteria
 
     #[Route('/fetch-filtered-quizzes', name: 'fetch_filtered_quizzes')]
-    public function fetchFilteredQuizzes(Request $request, QuizRepository $quizRepository, PaginatorInterface $paginator): JsonResponse
+    public function fetchFilteredQuizzes3(Request $request, QuizRepository $quizRepository, PaginatorInterface $paginator): JsonResponse
     {
         $trainerName = $request->query->get('trainer');
         $topic = $request->query->get('topic');
         $page = $request->query->getInt('page', 1);
         $limit = 10; // Define how many items  per page
+        //$userId = $request->query->get('user');
 
+
+        //$queryBuilder = $quizRepository->findByFiltersQueryBuilder($trainerName, $topic, $userId);
         $queryBuilder = $quizRepository->findByFiltersQueryBuilder($trainerName, $topic);
-
         $pagination = $paginator->paginate($queryBuilder, $page, $limit);
 
         $quizzesArray = [];
@@ -249,5 +295,69 @@ class QuizRepositoryController extends AbstractController
             'pagination' => $paginationData,
         ]);
     }
+
+
+
+
+**/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    #[Route('/fetch-filtered-quizzes', name: 'fetch_filtered_quizzes')]
+    public function fetchFilteredQuizzes(Request $request, QuizRepository $quizRepository, PaginatorInterface $paginator): JsonResponse
+    {
+        $trainerName = $request->query->get('trainer');
+        $topic = $request->query->get('topic');
+        $page = $request->query->getInt('page', 1);
+        $limit = 10; // Define how many items  per page
+        //$userId = $request->query->get('user');
+        $userId = $request->query->get('user');
+
+        $queryBuilder = $quizRepository->findByFiltersQueryBuilder($trainerName, $topic, $userId);
+        //$queryBuilder = $quizRepository->findByFiltersQueryBuilder($trainerName, $topic);
+        $pagination = $paginator->paginate($queryBuilder, $page, $limit);
+
+        $quizzesArray = [];
+        foreach ($pagination as $quiz) {
+            $quizzesArray[] = [
+                'id' => $quiz->getId(),
+                'creationDate' => $quiz->getCreationDate()->format('d-m-Y'),
+                'type' => $quiz->getType(),
+                'trainerName' => $quiz->getTrainer() ? $quiz->getTrainer()->getName() : 'N/A',
+                'detailsUrl' => $this->generateUrl('app_quiz_details', ['id' => $quiz->getId()]),
+                'historyUrl' => $this->generateUrl('app_quiz_history', ['id' => $quiz->getId()]),
+                'questionsLength' => count($quiz->getQuestions()),
+            ];
+        }
+
+        // Preparing pagination data
+        $paginationData = [
+            'currentPage' => $pagination->getCurrentPageNumber(),
+            'totalPages' => ceil($pagination->getTotalItemCount() / $limit),
+            'itemsPerPage' => $limit,
+            'totalItems' => $pagination->getTotalItemCount(),
+        ];
+
+        return new JsonResponse([
+            'quizzes' => $quizzesArray,
+            'pagination' => $paginationData,
+        ]);
+    }
+
+
+
+
 
 }

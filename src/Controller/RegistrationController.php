@@ -11,9 +11,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Log\LoggerInterface;
 
-//This project uses a service to hash passwords. See src/Services/PasswordHasher.php
-//use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-
 use App\Services\PasswordHasher;
 /**
  * This controller is used to register new users.

@@ -4,7 +4,7 @@
 
 {% block body %}
     <div class="d-flex flex-column min-vh-100">
-        <header>
+       <!-- <header>-->
             <!-- Common header and navigation elements -->
             <div class="container">
                 <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
@@ -34,11 +34,6 @@
                                 <li class="nav-item"><a href="{{ path('app_generate_quiz') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_generate_quiz') ? 'active' : '' }}">Generate Quiz</a></li>
                             {% endif %}
 
-                            {#
-                            <li class="nav-item"><a href="{{ path('app_quiz_repository') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_quiz_repository') ? 'active' : '' }}">Quiz Repository</a></li>
-                            <li class="nav-item"><a href="{{ path('app_generate_quiz') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('app_generate_quiz') ? 'active' : '' }}">Generate Quiz</a></li>
-                            #}
-
 
                             <li class="nav-item"><a href="{{ path('profile_edit') }}" class="nav-link {{ app.request.attributes.get('_route') is same as('profile_edit') ? 'active' : '' }}">Account</a></li>
 
@@ -53,7 +48,7 @@
 
                 </header>
             </div>
-        </header>
+      <!--  </header>-->
 
         <div class="container mt-2">
             <main>

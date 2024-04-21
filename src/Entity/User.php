@@ -274,8 +274,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function createQuiz(string $title, string $caseScenario): Quiz
     {
         $quiz = new Quiz();
-        //$quiz->setTitle($title);
-        //$quiz->setCaseScenario($caseScenario);
         $quiz->setCreationDate(new \DateTime());
         $this->addCreatedQuiz($quiz);
 

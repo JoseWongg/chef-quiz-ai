@@ -24,18 +24,37 @@ class QuizRepository extends ServiceEntityRepository
 
 
 
+    // Find quizzes based on filter criteria
+    public function findByFiltersQueryBuilder($trainerName, $topic, $userId = null): QueryBuilder {
+        $qb = $this->createQueryBuilder('q')
+            ->leftJoin('q.trainer', 't');
 
+        if ($trainerName) {
+            $qb->andWhere('t.name = :trainerName')
+                ->setParameter('trainerName', $trainerName);
+        }
 
+        if ($topic) {
+            $qb->andWhere('q.type = :topic')
+                ->setParameter('topic', $topic);
+        }
 
-    /**
-     * Finds quizzes based on filter criteria.
-     *
-     * @param \DateTimeInterface|null $dateFrom
-     * @param \DateTimeInterface|null $dateTo
-     * @param string|null $topic
-     * @param string|null $trainerName
-     * @return Quiz[]
-     */
+        if ($userId) {
+            // Create a subquery to select quizzes that have been assigned to the specified user
+            $subQuery = $this->_em->createQueryBuilder()
+                ->select('IDENTITY(aq.quiz)')
+                ->from('App\Entity\AssignedQuiz', 'aq')
+                ->where('aq.chef = :userId')
+                ->getDQL();
+
+            $qb->andWhere($qb->expr()->in('q.id', $subQuery))
+                ->setParameter('userId', $userId);
+        }
+
+        return $qb;
+    }
+
+/**
     public function findByFilters2(?\DateTimeInterface $dateFrom, ?\DateTimeInterface $dateTo, ?string $topic, ?string $trainerName): array
     {
         $queryBuilder = $this->createQueryBuilder('q')
@@ -60,86 +79,5 @@ class QuizRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
-
-
-/**
-
-    // original version of the method
-    public function findByFilters($trainerName, $topic)
-    {
-        $qb = $this->createQueryBuilder('q')
-            ->leftJoin('q.trainer', 't');
-
-        if ($trainerName) {
-            $qb->andWhere('t.name = :trainerName')
-                ->setParameter('trainerName', $trainerName);
-        }
-
-        if ($topic) {
-            $qb->andWhere('q.type = :topic')
-                ->setParameter('topic', $topic);
-        }
-
-        return $qb->getQuery()->getResult();
-    }
-**/
-
-
-
-
-    public function findByFiltersQueryBuilder($trainerName, $topic): QueryBuilder {
-        $qb = $this->createQueryBuilder('q')
-            ->leftJoin('q.trainer', 't');
-
-        if ($trainerName) {
-            $qb->andWhere('t.name = :trainerName')
-                ->setParameter('trainerName', $trainerName);
-        }
-
-        if ($topic) {
-            $qb->andWhere('q.type = :topic')
-                ->setParameter('topic', $topic);
-        }
-
-        // Return the query builder instead of executing the query
-        return $qb;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    /**
-//     * @return Quiz[] Returns an array of Quiz objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('q')
-//            ->andWhere('q.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('q.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Quiz
-//    {
-//        return $this->createQueryBuilder('q')
-//            ->andWhere('q.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    **/
 }

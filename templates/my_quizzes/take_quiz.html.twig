@@ -10,7 +10,7 @@
                     <!-- Question Slides -->
                     {% for question in formattedDetails %}
 
-                            <div class="carousel-item {% if loop.first %}active{% endif %}" data-question-id="{{ question.id }}">
+                        <div class="carousel-item {% if loop.first %}active{% endif %}" data-question-id="{{ question.id }}">
 
                             <div class="card mb-4" style="background-color: #0056b3; padding: 20px; margin-left: 2em">
                                 <div class="card-body" style="min-height: 713px;">
@@ -18,7 +18,7 @@
 
                                     <!-- Case Scenario for Question -->
                                     <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #fff;">
-                                         <p class="card-text scenario-text">{{ question.caseScenario }}</p>
+                                        <p class="card-text scenario-text">{{ question.caseScenario }}</p>
                                     </div>
 
                                     <!-- Question Text -->
@@ -49,15 +49,14 @@
                                             {% if not loop.first %}
                                                 <button class="btn btn-dark previous-button-{{ loop.index }}" type="button" style="margin-top: 8em">Previous</button>
                                             {% else %}
-                                                <div class="flex-grow-1"></div> <!-- Spacer for the first slide if needed -->
+                                                <div class="flex-grow-1"></div> <!-- Spacer for the first slide-->
                                             {% endif %}
 
                                             <!-- if it is not the last loop, then show the next button -->
                                             {% if not loop.last %}
                                                 <button class="btn btn-dark next-button-{{ loop.index }}" type="button" style="margin-top: 8em">Next</button>
                                             {% else %}
-                                               <!--submit button-->
-                                                {# <button class="btn btn-dark submit-button" type="button" style="margin-top: 8em" data-passing-score="{{ assignedQuiz.passingScore }}">Submit</button> #}
+                                                <!--submit button-->
                                                 <button class="btn btn-dark submit-button" type="button" style="margin-top: 8em" data-passing-score="{{ assignedQuiz.passingScore }}" data-assigned-quiz-id="{{ assignedQuiz.id }}">Submit</button>
                                             {% endif %}
                                         </div>
@@ -93,16 +92,17 @@
     {{ parent() }}
     <script>
 
+        // Function to handle the beforeunload event to prevent accidental page refresh or navigation
+        function handleBeforeUnload(e) {
+            e.returnValue = true;
+            return true;
+        }
+
 
         document.addEventListener("DOMContentLoaded", function() {
 
-            // Prevent accidental page reload
-            window.addEventListener('beforeunload', function(e) {
-                e.returnValue = true;
-                return true;
-            });
-
-
+            // Add a beforeunload event listener to prevent accidental page refresh or navigation
+            window.addEventListener('beforeunload', handleBeforeUnload);
 
             // Determine the number of questions dynamically
             const numberOfQuestions = document.querySelectorAll('.carousel-item').length - 1; // Subtract one for the feedback slide
@@ -113,7 +113,7 @@
                     radio.addEventListener('change', function() {
                         let nextButton = document.querySelector(`.next-button-${i}`);
                         if (nextButton) {
-                            nextButton.disabled = false; // Enable the Next button
+                            nextButton.disabled = false;
                         }
                     });
                 });
@@ -138,7 +138,7 @@
                         const isSelected = document.querySelector(`input[name="question${i}"]:checked`);
                         if (!isSelected) {
                             // Prevent moving to the next slide and alert the user
-                            event.preventDefault(); // Prevent the carousel from moving to the next slide
+                            event.preventDefault();
                             alert("Please select an option before moving to the next question.");
                         } else {
                             // Proceed to the next slide
@@ -180,7 +180,6 @@
 
                     // Add the selected option to the responses array
                     responses.push({ questionId, selectedOptionId: optionId });
-                    //responses.push({ questionId, selectedOptionId: optionId, optionTextContent });
 
                     feedbackHtml += `<div style="margin-top: 2em"><strong>Selected Answer: </strong>${optionText}</div>`;
                     feedbackHtml += `<div style="margin-top: 2em"><strong>Is correct: </strong>${isCorrect ?'Yes</div>' : 'No</div>'}`;
@@ -228,13 +227,19 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ responses }) // Send the responses array to the backend
+                // Send the responses array to the backend
+                body: JSON.stringify({ responses })
             })
                 .then(response => response.json())
                 .then(data => {
                     console.log('Assigned quiz submission successful', data);
-                    // Navigate to the results slide or perform other success actions here
+
+                    // Remove the beforeunload event listener
+                    window.removeEventListener('beforeunload', handleBeforeUnload);
+
+                    // Navigate to the results slide
                     $('#quizCarousel').carousel('next');
+
                 })
                 .catch(error => console.error('Error submitting responses:', error));
 

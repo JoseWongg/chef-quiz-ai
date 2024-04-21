@@ -58,7 +58,6 @@ class AssignedQuizTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $question = new Question();
             $option = new Option();
-            //$option->setIsSelected($i < 2); // Select the first 2 questions
             $question->addOption($option);
             $quiz->addQuestion($question);
         }
@@ -72,8 +71,8 @@ class AssignedQuizTest extends TestCase
         // Debugging: Output the actual progression value
         var_dump($assignedQuiz->getProgression());
 
-        // Now, assert the progression value
-        $this->assertEquals(0.4, $assignedQuiz->getProgression()); // 2 out of 5 questions have selected options
+        // Assert the progression value
+        $this->assertEquals(0.4, $assignedQuiz->getProgression());
     }
 
     public function testMarkCalculationAndSubmission()
@@ -83,8 +82,7 @@ class AssignedQuizTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $question = new Question();
             $option = new Option();
-            //$option->setIsSelected(true);
-            $option->setIsCorrect($i % 2 === 0); // Correct alternate options
+            $option->setIsCorrect($i % 2 === 0);
             $question->addOption($option);
             $quiz->addQuestion($question);
         }
@@ -93,7 +91,7 @@ class AssignedQuizTest extends TestCase
         $assignedQuiz->setQuiz($quiz);
         $assignedQuiz->submit();
 
-        $this->assertEquals(60.0, $assignedQuiz->getMark()); // 3 out of 5 questions correct
+        $this->assertEquals(60.0, $assignedQuiz->getMark());
         $this->assertTrue($assignedQuiz->isCompleted());
         $this->assertNotNull($assignedQuiz->getCompletedDate());
     }

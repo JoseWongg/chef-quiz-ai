@@ -6,6 +6,9 @@ use App\Entity\AssignedQuiz;
 use App\Repository\OptionRepository;
 use App\Repository\QuestionRepository;
 
+/**
+ * This class is used to format the details of an assigned quiz for display.
+ */
 class AssignedQuizPreviewFormattingService
 {
     private QuestionRepository $questionRepository;
@@ -26,7 +29,6 @@ class AssignedQuizPreviewFormattingService
                 'caseScenario' => $question->getCaseScenario(),
                 'questionText' => $question->getQuestionText(),
                 'options' => [],
-              //  'selectedOption' => null,
             ];
 
             foreach ($question->getOptions() as $option) {
@@ -34,7 +36,7 @@ class AssignedQuizPreviewFormattingService
                     'optionText' => $option->getOptionText(),
                     'isCorrect' => $option->getIsCorrect(),
                     'feedback' => $option->getFeedback(),
-                    'id' => $option->getId(),//added
+                    'id' => $option->getId(),
                 ];
 
 

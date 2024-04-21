@@ -40,7 +40,7 @@ class OpenAIServiceTest extends TestCase
      */
     public function testApiConnectivity()
     {
-        // Assuming the `generateQuizCaseScenario` method doesn't require a prompt argument based on your service definition
+           // Call the generateQuestion method with a sample question
         $response = $this->openAIService->generateQuestion('food safety');
 
         // Ensures the response is not empty

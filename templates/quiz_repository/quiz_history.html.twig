@@ -9,6 +9,28 @@
         <a href="{{ path('app_quiz_repository') }}" class="btn btn-primary">Back to Quiz Repository</a>
 
 
+
+
+    {# Section to display the filters for the quizzes #}
+    <div class="container" style="margin-top: 3em; margin-bottom: 4em">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="userFilter">Filter by Chef:</label>
+                <select id="userFilter" class="form-select">
+                        <option value="">All Users</option>
+                        {% for user in users %}
+                             <option value="{{ user.id }}" {% if user.id == app.request.query.get('user') %}selected{% endif %}>
+                                  {{ user.name }}
+                             </option>
+                        {% endfor %}
+                </select>
+            </div>
+
+        </div>
+    </div>
+
+
+
     <div class="container">
         <h2 style="text-align: center; padding-bottom: 1em">Quiz History</h2>
         <table class="table">
@@ -74,4 +96,45 @@
             </tbody>
         </table>
     </div>
+
+{# Pagination #}
+<div id="paginationControls" class="d-flex justify-content-center">
+    {% if currentPage > 1 %}
+        <a href="{{ path('app_quiz_history', {'id': id, 'user': app.request.query.get('user'), 'page': currentPage - 1}) }}" class="btn btn-outline-secondary">Previous</a>
+    {% endif %}
+
+    {% for i in 1..totalPages %}
+        <a href="{{ path('app_quiz_history', {'id': id, 'user': app.request.query.get('user'), 'page': i}) }}" class="btn {{ i == currentPage ? 'btn-primary' : 'btn-outline-secondary' }}">{{ i }}</a>
+    {% endfor %}
+
+    {% if currentPage < totalPages %}
+        <a href="{{ path('app_quiz_history', {'id': id, 'user': app.request.query.get('user'), 'page': currentPage + 1}) }}" class="btn btn-outline-secondary">Next</a>
+    {% endif %}
+</div>
+
+
+
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+        <script>
+        // Filter by user
+document.addEventListener('DOMContentLoaded', function() {
+    var userFilter = document.getElementById('userFilter');
+    if (userFilter) {
+        userFilter.addEventListener('change', function() {
+            var userId = this.value;
+            var currentUrl = new URL(window.location.href);
+            if (userId) {
+                currentUrl.searchParams.set('user', userId);
+            } else {
+                currentUrl.searchParams.delete('user');
+            }
+            window.location.href = currentUrl.toString();
+        });
+    }
+});
+        </script>
 {% endblock %}

@@ -18,15 +18,6 @@ class Question
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    public function getCaseScenario(): ?string
-    {
-        return $this->caseScenario;
-    }
-
-    public function setCaseScenario(?string $caseScenario): void
-    {
-        $this->caseScenario = $caseScenario;
-    }
 
     #[ORM\ManyToOne(targetEntity: Quiz::class, inversedBy: "questions")]
     #[ORM\JoinColumn(nullable: false)]
@@ -51,6 +42,18 @@ class Question
     {
         $this->options = new ArrayCollection();
     }
+
+
+    public function getCaseScenario(): ?string
+    {
+        return $this->caseScenario;
+    }
+
+    public function setCaseScenario(?string $caseScenario): void
+    {
+        $this->caseScenario = $caseScenario;
+    }
+
 
     public function getId(): ?int
     {

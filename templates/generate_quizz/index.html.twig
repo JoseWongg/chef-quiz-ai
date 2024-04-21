@@ -1,6 +1,6 @@
 {% extends 'layout.html.twig' %}
 
-{% block layout_title %}ChefQuizAI{% endblock %}
+{% block layout_title %}ChefQuizAI-Generate Quiz{% endblock %}
 
 {% block content %}
     <div class="row">
@@ -128,13 +128,6 @@
 
 
 
-
-
-
-
-
-
-
 {% block javascripts %}
     {{ parent() }}
     <script>
@@ -142,21 +135,26 @@
         // Array to hold question data objects
         let quizQuestions = [];
 
-        const quizType = document.getElementById('quiz-type').value;
-
-
         document.addEventListener('DOMContentLoaded', function() {
-
-
-
-
             // Prevent accidental page reload
             window.addEventListener('beforeunload', function(e) {
-                e.returnValue = true;
-                return true;
+                //If quizQuestion is empty
+                if (quizQuestions.length > 0) {
+                    // This will display a confirmation dialog
+                    e.returnValue = true;
+                    return true;
+                }
+
+                // Get the text content of the case scenario paragraph
+                var caseScenarioText = document.querySelector('.case.scenario').textContent.trim();
+
+                // Check if the text is different from the placeholder
+                if (caseScenarioText !== "[Case Scenario]") {
+                    // This will also trigger a confirmation dialog
+                    e.returnValue = 'You have unsaved changes! Are you sure you want to leave?';
+                    return e.returnValue;
+                }
             });
-
-
 
             // Add event listener to the generate question button
             document.getElementById('generate-question-button').addEventListener('click', function () {
@@ -169,6 +167,9 @@
 
                 //deactivate the approve question button
                 document.getElementById('approve-question-button').disabled = true;
+
+                //deactivate the quiz type select
+                document.getElementById('quiz-type').disabled = true;
 
                 // clear the previous question content
                 clearQuestionContent();
@@ -267,28 +268,28 @@
             // Clear the question content
             function clearQuestionContent() {
                 document.querySelector('.case.scenario').textContent = '[Case Scenario]';
-                document.querySelector('.case.scenario').style.backgroundColor = 'white'; // Set background color to white
-                document.querySelector('.case.scenario').style.border = 'none'; // Remove border
+                document.querySelector('.case.scenario').style.backgroundColor = 'white';
+                document.querySelector('.case.scenario').style.border = 'none';
 
                 document.querySelector('.question.text').textContent = '[Question]';
-                document.querySelector('.question.text').style.backgroundColor = 'white'; // Set background color to white
-                document.querySelector('.question.text').style.border = 'none'; // Remove border
+                document.querySelector('.question.text').style.backgroundColor = 'white';
+                document.querySelector('.question.text').style.border = 'none';
 
                 for (let i = 1; i <= 4; i++) {
                     const optionText = document.querySelector('.option' + i + ' .option-text small');
                     optionText.textContent = '[Option Text]';
-                    optionText.style.backgroundColor = 'white'; // Set background color to white
-                    optionText.style.border = 'none'; // Remove border
+                    optionText.style.backgroundColor = 'white';
+                    optionText.style.border = 'none';
 
                     const feedbackText = document.querySelector('.option' + i + ' .feedback small');
                     feedbackText.textContent = '[Feedback]';
-                    feedbackText.style.backgroundColor = 'white'; // Set background color to white
-                    feedbackText.style.border = 'none'; // Remove border
+                    feedbackText.style.backgroundColor = 'white';
+                    feedbackText.style.border = 'none';
 
-                    // Remove radio buttons and replace with placeholder for correctness<<<<<<<<<<<
+                    // Remove radio buttons and replace with placeholder for correctness
                     const correctnessContainer = document.querySelector('.option' + i + ' .right-wrong');
                     correctnessContainer.innerHTML = '<small>[Right/Wrong]</small>';
-                    correctnessContainer.style.backgroundColor = 'white'; // Set background color to white
+                    correctnessContainer.style.backgroundColor = 'white';
                     correctnessContainer.style.cssText = 'border: 1px solid #ccc; padding: 5px; border-radius: 5px; background-color: #fff; margin-top: 5px;';
                 }
             }
@@ -326,9 +327,9 @@
                 const editableElements = document.querySelectorAll('[contenteditable="true"]');
                 editableElements.forEach(element => {
                     if (editable) {
-                        element.style.border = "1px dashed #4CAF50"; // Green dashed border
-                        element.style.backgroundColor = "#f0f0f0"; // Light grey background
-                        element.style.padding = "5px"; // Add padding
+                        element.style.border = "1px dashed #4CAF50";
+                        element.style.backgroundColor = "#f0f0f0";
+                        element.style.padding = "5px";
                     }
                 });
             }
@@ -367,15 +368,13 @@
                     const feedbackText = feedbackElement ? feedbackElement.textContent.trim() : 'No feedback provided';
                     // Check if the section is editable by looking for radio inputs
                     const isEditable = option.querySelector('.right-wrong input[type="radio"]') !== null;
-                    let correctnessText = ''; // Default if neither is selected
-                    let correct = false; // Default value
+                    let correctnessText = '';
+                    let correct = false;
                     if (isEditable) {
                         // Extract correctness from radio buttons
                         option.querySelectorAll('.right-wrong input[type="radio"]').forEach(radio => {
                             if (radio.checked) {
-                                // console log the value attribute of the radio button
-                                //console.log(radio.value);
-                                correctnessText = radio.value; // Will be 'Right' or 'Wrong'
+                                correctnessText = radio.value;
                                 if (correctnessText === 'Right') {
                                     correct = true;
                                 }
@@ -383,8 +382,7 @@
                         });
                     } else {
                         // Extract correctness from text directly if not in editable mode
-                        correctnessText = option.querySelector('.right-wrong').textContent.trim(); // Direct text extraction
-                            //console.log(correctnessText);
+                        correctnessText = option.querySelector('.right-wrong').textContent.trim();
                             if (correctnessText === 'Right') {
                                 correct = true;
                             }
@@ -395,26 +393,20 @@
                         optionText: optionText,
                         feedback: feedbackText,
                         isCorrect: correct,
-                        // Other fields can be assigned null or default values as needed
                     };
 
                     // Add the option data to the question data
                     questionData.options.push(optionData);
-                    //console.log(optionTemp);
-                    // Add the option data to the options HTML
                     optionsHtml += `<div>Option ${index + 1}: ${optionText}</div>
                             <div>Feedback: ${feedbackText}</div>
                             <div>Correctness: ${correctnessText}</div><br>`;
                 });
 
-                //console.log (questionData);
                 // Add the question to the quiz data array
                 quizQuestions.push(questionData);
 
 
                 const accordionItemHtml = `
-
-
 
                         <div class="accordion-item" id="accordion-item-${questionNumber}" style="margin-bottom: 20px;">
                             <h2 class="accordion-header" id="heading${questionNumber}">
@@ -435,9 +427,6 @@
                                 </div>
                             </div>
                         </div>`;
-
-
-
 
 
 
@@ -520,7 +509,7 @@
 
 
 
-            // Function to attach an event listener to the accordion button
+            // Function to attach an event listener to the accordion button to toggle the collapse state
             function attachAccordionToggleListener(headingId) {
                 const headerButton = document.getElementById(headingId).querySelector('.accordion-button');
                 headerButton.addEventListener('click', function () {
@@ -552,8 +541,9 @@
                     return false;
                 }
                 //Counter for options marked as right
-                let rightCount = 0; // Counter for options marked as "Right"
-                let selectionCount = 0; // Counter for options with a selected correctness
+                let rightCount = 0;
+                // Counter for options with a selected correctness
+                let selectionCount = 0;
 
                 // Validate Options, Feedback, and Correctness
                 for (let i = 1; i <= 4; i++) {
@@ -581,7 +571,8 @@
                             alert(`Please select right or wrong for option ${i}.`);
                             return false;
                         } else {
-                            selectionCount++; // Increment if an option is selected
+                            // Increment if an option is selected
+                            selectionCount++;
                         }
 
                         // Check if selected option is "Right"
@@ -618,12 +609,15 @@
 
             // Approve the quiz and send the data to the server
             document.getElementById('approve-quiz-button').addEventListener('click', function () {
+
+                const quizType = document.getElementById('quiz-type').value;
+
                 // Check if there are any questions in the quiz
                 if (quizQuestions.length === 0) {
                     alert('Please add at least one question to the quiz.');
                     return;
                 }
-                //console.log (JSON.stringify(quizQuestions));
+
                 const quizData = {
                     quizType: quizType,
                     questions: quizQuestions,

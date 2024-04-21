@@ -18,7 +18,7 @@ class HomeControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/');
         // Check that the HTTP status code is 200 (OK)
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        // Call a helper method to assert that the controller is HomeControllerRRR
+        // Call a helper method to assert that the controller is HomeController
         $this->assertControllerIsHomeController($client);
     }
 
@@ -35,7 +35,6 @@ class HomeControllerTest extends WebTestCase
 
     /**
      * Test that the home template has the required structure.
-     * PHPUnit follows a convention where any public method in a test class that starts with the word test is automatically recognized as a test method and executed.
      */
     public function testHomeTemplateStructure()
     {

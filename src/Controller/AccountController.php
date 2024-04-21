@@ -21,7 +21,7 @@ class AccountController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
         SessionInterface $session,
-        TokenStorageInterface $tokenStorage // Injected TokenStorageInterface
+        TokenStorageInterface $tokenStorage
     ): Response {
         $user = $this->getUser();
         $form = $this->createForm(UserAccountType::class, $user);
@@ -41,10 +41,11 @@ class AccountController extends AbstractController
             if ($plainPassword) {
                 // This will update the security token in the session
                 $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-                $tokenStorage->setToken($token); // Use injected TokenStorageInterface
+                // Uses injected TokenStorageInterface
+                $tokenStorage->setToken($token);
                 $session->set('_security_main', serialize($token));
 
-                // Migrate the session to prevent session fixation issues
+                // Migrates the session to prevent session fixation issues
                 $session->migrate(true);
             }
 

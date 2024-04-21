@@ -17,7 +17,6 @@ class UserTest extends TestCase
         $user = new User();
         $this->assertNotNull($user->getRoles());
         $this->assertContains('ROLE_USER', $user->getRoles());
-        // Add more assertions here for other default values if needed
     }
 
     // Test the email and name setters and getters
@@ -42,7 +41,7 @@ class UserTest extends TestCase
         // Test setting and getting custom roles
         $user->setRoles(['ROLE_ADMIN']);
         $this->assertContains('ROLE_ADMIN', $user->getRoles());
-        $this->assertContains('ROLE_USER', $user->getRoles()); // ROLE_USER should still be present
+        $this->assertContains('ROLE_USER', $user->getRoles());
     }
 
     // Test the password management methods
@@ -56,19 +55,6 @@ class UserTest extends TestCase
         $this->assertEquals('hashedPassword', $user->getPassword());
     }
 
-    // Test the quiz creation method
-    /**
-    public function testCreateQuiz()
-    {
-        $user = new User();
-        $quiz = $user->createQuiz('Quiz Title', 'Case Scenario');
-
-        $this->assertInstanceOf(Quiz::class, $quiz);
-        $this->assertEquals('Quiz Title', $quiz->getTitle());
-        $this->assertEquals('Case Scenario', $quiz->getCaseScenario());
-        $this->assertContains($quiz, $user->getCreatedQuizzes());
-    }
-**/
     // Test the quiz assignment method
     public function testAssignQuizToChef()
     {

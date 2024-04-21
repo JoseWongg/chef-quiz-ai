@@ -11,8 +11,8 @@ use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
 
 
-//  OpenAIService class to handle the API requests to OpenAI (THIS DOES NOT USE A RAG APPROACH)
-/*class OpenAIService
+//  OpenAIService class to handle the API requests to OpenAI (THIS DOES NOT USE A database for the best practices to provide context for the quiz question)
+/**class OpenAIService
 {
     //  GuzzleHttp Client instance
     private Client $client;
@@ -106,9 +106,14 @@ PROMPT;
     }
 }
 
-*/
 
-// OpenAIService class to handle the API requests to OpenAI (THIS USES A RAG APPROACH)
+
+**/
+
+
+
+
+// OpenAIService class to handle the API requests to OpenAI (This uses a database for the best practices to provide context for the quiz question)
 class OpenAIService
 {
     private Client $client;
@@ -137,6 +142,11 @@ class OpenAIService
         $this->foodSafetyBestPracticesRepository = $foodSafetyBestPracticesRepository;
     }
 
+
+
+
+
+
     /**
      *
      * @throws Exception
@@ -154,7 +164,8 @@ class OpenAIService
         $contextualStatement = $rule ? $rule->getRule() : '';
 
         // Ensures the contextual statement is correctly included in the prompt
-        $instruction = !empty($contextualStatement) ? "We are testing professional chefs about their knowledge of the following rule: \"$contextualStatement\". " : "";
+        $instruction = !empty($contextualStatement) ?
+            "We are testing professional chefs about their knowledge of the following rule: \"$contextualStatement\". " : "";
 
 
         $customPrompt = <<<PROMPT
@@ -212,7 +223,3 @@ PROMPT;
         }
     }
 }
-
-
-
-

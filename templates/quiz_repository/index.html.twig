@@ -9,19 +9,23 @@
     {# Section to display the filters for the quizzes #}
     <div class="container" style="margin-top: 1em; margin-bottom: 4em">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="trainerFilter" >Filter by Trainer:</label>
                 <select id="trainerFilter" class="form-select">
                     <option value="">All</option>
                     {% for user in users %}
-                        <option value="{{ user.name }}">{{ user.name }}</option>
+
+                        {#if the user has the role trainer add its name to the dropdown list #}
+                        {% if 'ROLE_TRAINER' in user.roles %}
+                            <option value="{{ user.name }}">{{ user.name }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
             </div>
 
 
 
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="topicFilter">Filter by Topic:</label>
                 <select id="topicFilter" class="form-select">
                     <option value="">All</option>
@@ -30,8 +34,22 @@
                     {% endfor %}
                 </select>
             </div>
+
+
+            <div class="col-md-4">
+                <label for="userFilter">Filter by Chef:</label>
+                <select id="userFilter" class="form-select">
+                    <option value="">All Users</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
         </div>
     </div>
+
+
 
 
 
@@ -134,10 +152,11 @@
     {{ parent() }}
 
     <script>
-        // This is the one I've been working on today
+
 
         document.addEventListener('DOMContentLoaded', function() {
 
+            // Event listener for the quizList table
             document.getElementById('quizList').addEventListener('click', function(e) {
                 // Check if the clicked element is an assign button
                 if (e.target && e.target.getAttribute('data-bs-target') === '#assignModal') {
@@ -162,12 +181,13 @@
             function fetchFilteredQuizzes(page = 1) { // Default to page 1
                 const trainerFilter = document.getElementById('trainerFilter').value;
                 const topicFilter = document.getElementById('topicFilter').value;
-                const url = `/fetch-filtered-quizzes?trainer=${encodeURIComponent(trainerFilter)}&topic=${encodeURIComponent(topicFilter)}&page=${page}`;
+                const userFilter = document.getElementById('userFilter').value;
+                const url = `/fetch-filtered-quizzes?trainer=${encodeURIComponent(trainerFilter)}&topic=${encodeURIComponent(topicFilter)}&user=${encodeURIComponent(userFilter)}&page=${page}`;
 
                 fetch(url)
                     .then(response => response.json())
                     .then(data => {
-                        const { quizzes, pagination } = data; // Destructure the data object
+                        const { quizzes, pagination } = data;
                         const quizList = document.getElementById('quizList');
                         quizList.innerHTML = ''; // Clear the current list
 
@@ -231,20 +251,10 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
             // Event listeners for filter changes
             document.getElementById('trainerFilter').addEventListener('change', () => fetchFilteredQuizzes());
             document.getElementById('topicFilter').addEventListener('change', () => fetchFilteredQuizzes());
+            document.getElementById('userFilter').addEventListener('change', () => fetchFilteredQuizzes());
 
             // Initial fetch
             fetchFilteredQuizzes();
@@ -254,7 +264,7 @@
             var deadlineInput = document.getElementById('quizDeadline');
             var today = new Date();
             var dd = String(today.getDate()).padStart(2, '0');
-            var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0
             var yyyy = today.getFullYear();
             today = yyyy + '-' + mm + '-' + dd;
             deadlineInput.setAttribute('min', today);
@@ -266,6 +276,7 @@
                     alert('Please select at least one user to assign the quiz to.');
                     return;
                 }
+                // Check if the passingScore and deadline inputs are empty
                 if (document.getElementById('passingScore').value === '') {
                     alert('Please set the passing score.');
                     return;

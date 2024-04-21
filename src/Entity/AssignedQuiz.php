@@ -336,9 +336,9 @@ class AssignedQuiz
     // Giving the index in the responses array, returns the selected option id
     public function getSelectedOptionId(int $index): ?int
     {
-        $response = $this->responses[$index] ?? null; // Safeguard against undefined index
+        $response = $this->responses[$index] ?? null;
         if (!$response) {
-            return null; // If no response found at the index, return null
+            return null;
         }
 
         // Extract the number from "selectedOptionId": "optionXX"
@@ -372,16 +372,11 @@ class AssignedQuiz
         $totalQuestions = count($this->getQuiz()->getQuestions());
         // The value in percentage of each question
         $questionValue = 100 / $totalQuestions;
-        // The passing score
-        $passingScore = $this->passingScore; // The number of correct answers to pass the quiz
+        // The passing score. The number of correct answers to pass the quiz
+        $passingScore = $this->passingScore;
         // The passing score in percentage
         $passingScorePercentage = $passingScore * $questionValue;
         // If the mark is greater or equal to the passing score in percentage, the quiz is passed
         return $this->mark >= $passingScorePercentage;
-
     }
-
-
 }
-
-

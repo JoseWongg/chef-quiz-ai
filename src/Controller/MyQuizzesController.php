@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 
-
+// Controller to handle the quizzes assigned to the currently logged-in user
 class MyQuizzesController extends AbstractController
 {
     // Method to display all the quizzes assigned to the currently logged-in user
@@ -36,7 +36,6 @@ class MyQuizzesController extends AbstractController
 
         // All the assigned quizzes in the database
         $assignedQuizRepository = $entityManager->getRepository(AssignedQuiz::class);
-        //$assignedQuizzes = $assignedQuizRepository->findAll();
         $assignedQuizzes = $assignedQuizRepository->findBy(['chef' => $user]);
         return $this->render('my_quizzes/index.html.twig', [
             'assignedQuizzes' => $assignedQuizzes,
@@ -120,63 +119,14 @@ class MyQuizzesController extends AbstractController
         }
     }
 
-
-
-
-
-/**
-
-
-    // Method to fetch filtered quizzes based on completion status and topic
-    #[Route('/fetch-my-filtered-quizzes', name: 'fetch_my_filtered_quizzes')]
-    public function fetchQuizzes(Request $request, AssignedQuizRepository $assignedQuizRepository): JsonResponse
-    {
-
-
-        $completionFilter = $request->query->get('completion');
-        $topicFilter = $request->query->get('topic');
-
-        $user = $this->getUser();
-
-        // Filter quizzes based on completion status and topic
-        $filteredQuizzes = $assignedQuizRepository->findByFilters($user, $completionFilter, $topicFilter);
-
-        // Serialize the quizzes to JSON format
-        $serializedQuizzes = [];
-        foreach ($filteredQuizzes as $quiz) {
-            $serializedQuizzes[] = [
-                // Data for the AssignedQuiz
-                'assignedQuizId' => $quiz->getId(),
-                'assignedQuizMark' => $quiz->getMark(),
-                'assignedQuizIsCompleted' => $quiz->isCompleted(),
-                'assignedQuizIsPassed' => $quiz->isPassed(),
-                // Data for the Quiz associated with the AssignedQuiz
-                'generatedDate' => $quiz->getGeneratedDate()->format('d-m-Y'),
-                'quizId' => $quiz->getQuiz()->getId(),
-                'topic' => $quiz->getQuiz()->getType(),
-                'assigner' => $quiz->getAssigner()->getName(),
-                'deadline' => $quiz->getDeadline()->format('d-m-Y'),
-                'overdue' => $quiz->calculateOverdueDays() > 0 ? 'Yes' : 'No',
-                'mark' => $quiz->getMark(),
-                'passed' => $quiz->isPassed() ? 'Passed' : 'Failed',
-                'complete' => $quiz->isCompleted() ? 'Completed' : 'Incomplete',
-            ];
-        }
-
-        // Return the JSON response with the filtered quizzes
-        return new JsonResponse($serializedQuizzes);
-    }
-
-**/
-
-
-
+    // Method to fetch the quizzes assigned to the currently logged-in user
     #[Route('/fetch-my-filtered-quizzes', name: 'fetch_my_filtered_quizzes')]
     public function fetchQuizzes(Request $request, AssignedQuizRepository $assignedQuizRepository, PaginatorInterface $paginator): JsonResponse {
         $completionFilter = $request->query->get('completion');
         $topicFilter = $request->query->get('topic');
         $page = $request->query->getInt('page', 1);
-        $limit = 10; //Define how many items  per page
+        //Define how many items  per page
+        $limit = 10;
 
         $user = $this->getUser();
         $queryBuilder = $assignedQuizRepository->findByFiltersQueryBuilder($user, $completionFilter, $topicFilter);
@@ -216,19 +166,6 @@ class MyQuizzesController extends AbstractController
             'pagination' => $paginationData,
         ]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 

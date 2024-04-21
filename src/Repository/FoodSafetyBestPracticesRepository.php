@@ -23,25 +23,10 @@ class FoodSafetyBestPracticesRepository extends ServiceEntityRepository
         parent::__construct($registry, FoodSafetyBestPractices::class);
     }
 
-        // Returns a random best practice for a given topic
-
-    ///**
-     //* @throws NonUniqueResultException
-     //*/
-    //public function findRandomRuleByTopic(string $topic): ?FoodSafetyBestPractices
-        //{
-            //return $this->createQueryBuilder('f')
-                //->andWhere('f.topic = :topic')
-                //->setParameter('topic', $topic)
-                //->orderBy('RAND() as HIDDEN rand') // MySQL specific. For other databases we need to use a different method to order randomly
-                //->setMaxResults(1)
-                //->getQuery()
-                //->getOneOrNullResult();
-        //}
-
 
     /**
      * @throws Exception
+     *
      */
     public function findRandomRuleByTopic(string $topic): ?FoodSafetyBestPractices
     {
@@ -67,52 +52,4 @@ class FoodSafetyBestPracticesRepository extends ServiceEntityRepository
         // Retrieve the entity using the found ID
         return $this->find($ruleData['id']);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    /**
-//     * @return FoodSafetyBestPractices[] Returns an array of FoodSafetyBestPractices objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('f')
-//            ->andWhere('f.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('f.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?FoodSafetyBestPractices
-//    {
-//        return $this->createQueryBuilder('f')
-//            ->andWhere('f.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }
