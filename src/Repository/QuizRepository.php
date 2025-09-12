@@ -54,30 +54,4 @@ class QuizRepository extends ServiceEntityRepository
         return $qb;
     }
 
-/**
-    public function findByFilters2(?\DateTimeInterface $dateFrom, ?\DateTimeInterface $dateTo, ?string $topic, ?string $trainerName): array
-    {
-        $queryBuilder = $this->createQueryBuilder('q')
-            ->leftJoin('q.trainer', 't');
-
-        if (!empty($topic)) {
-            $queryBuilder->andWhere('q.topic LIKE :topic')
-                ->setParameter('topic', '%' . $topic . '%');
-        }
-
-        if (!empty($trainerName)) {
-            $queryBuilder->andWhere('t.name = :trainerName')
-                ->setParameter('trainerName', $trainerName);
-        }
-
-        // Add date filters if both dateFrom and dateTo are provided
-        if ($dateFrom && $dateTo) {
-            $queryBuilder->andWhere('q.creationDate BETWEEN :dateFrom AND :dateTo')
-                ->setParameter('dateFrom', $dateFrom)
-                ->setParameter('dateTo', $dateTo);
-        }
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-    **/
 }

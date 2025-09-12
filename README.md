@@ -164,3 +164,25 @@ Add feature/integration tests under `tests/` (controllers, services, entities).
 - **Login issues** → check session storage permissions and `APP_SECRET` length (32 chars).
 
 ---
+
+## Documentation
+
+Additional project documentation is available in the repository:
+
+- **report.pdf** — *AI-capable web-based Application for the Continuous Food Safety Training and Assessment of Chefs*  
+  This document provides an in-depth overview of the project, including: 
+  - Methodology, specifications, and design.  
+  - Development process (Agile sprints), implementation details, and testing.  
+  - Evaluation, conclusions, and references.  
+
+Use this report as a detailed reference alongside the README for setup and usage.
+
+
+## Authorship & Contact
+Developed by **Jose Wong**  
+j.wong@mail.com  
+https://www.linkedin.com/in/jose-wongg  
+https://github.com/JoseWongg  
+
+## License
+MIT — see the [LICENSE](LICENSE) file for details.

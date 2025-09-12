@@ -211,8 +211,8 @@
                                 quizList.insertAdjacentHTML('beforeend', row);
                             });
                         }
-
-                        updatePaginationControls(pagination); // Call function to update pagination controls
+                        // Call function to update pagination controls
+                        updatePaginationControls(pagination);
                     })
                     .catch(error => console.error('Failed to fetch quizzes:', error));
             }
