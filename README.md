@@ -169,7 +169,7 @@ Add feature/integration tests under `tests/` (controllers, services, entities).
 
 Additional project documentation is available in the repository:
 
-- **report.pdf** — *AI-capable web-based Application for the Continuous Food Safety Training and Assessment of Chefs*  
+- **[report.pdf](report.pdf)** — *AI-capable web-based Application for the Continuous Food Safety Training and Assessment of Chefs*  
   This document provides an in-depth overview of the project, including: 
   - Methodology, specifications, and design.  
   - Development process (Agile sprints), implementation details, and testing.  
