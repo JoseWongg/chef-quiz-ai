@@ -1,4 +1,4 @@
-# ChefQuizAI — Developer README
+# ChefQuizAI — README
 
 AI‑powered web application for **continuous food‑safety training and assessment** of chefs. Trainers generate case‑scenario quizzes with detailed feedback, assign them to chefs, and track results.
 
